@@ -23,9 +23,18 @@ FastAPI application serving the recommender engine.
 ### `/frontend`
 React with TypeScript UI for inspecting data and recommendations.
 
+Built with Create React App (TypeScript template) for rapid development and built-in tooling.
+
 - **`/frontend/src`** - Source code
   - **`/frontend/src/components`** - Reusable React components
   - **`/frontend/src/pages`** - Page components
   - **`/frontend/src/services`** - API client and service layer
   - **`/frontend/src/types`** - TypeScript type definitions
 - **`/frontend/public`** - Static assets
+- **`/frontend/build`** - Production build output (generated)
+
+#### Technology Stack
+- **React 18** - UI framework
+- **TypeScript** - Type-safe JavaScript
+- **Create React App** - Build tooling and development server
+- **React Scripts** - Build and development scripts
