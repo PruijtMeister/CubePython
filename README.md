@@ -17,3 +17,20 @@ Let's use React with Typescript for the UI.
 
 # Backend
 The Backend is written in Python using FastAPI and is providing the content for the UI.
+
+# Setup
+
+## Frontend Setup
+The frontend is built with Create React App and TypeScript.
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Available scripts:
+- `npm start` - Starts the development server on http://localhost:3000
+- `npm run build` - Creates an optimized production build
+- `npm test` - Runs the test suite
+- `npm run eject` - Ejects from Create React App (one-way operation)
