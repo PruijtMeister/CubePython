@@ -1,5 +1,18 @@
 # Technical documentation
 
+## Development Environment
+
+This project uses Python virtual environments to isolate dependencies for different components:
+
+- **Backend virtual environment** (`backend/venv/`) - Contains FastAPI and related dependencies
+- **Scripts virtual environment** (`scripts/venv/`) - Contains scraping and data processing dependencies
+
+**Setup scripts:**
+- `setup_backend.sh` - Automated setup for backend virtual environment
+- `setup_scripts.sh` - Automated setup for scripts virtual environment
+
+Virtual environments are excluded from version control via `.gitignore`.
+
 ## Folder Structure
 
 The project is organized into three main components:
@@ -9,6 +22,17 @@ Contains data collection and processing scripts.
 
 - **`/scripts/scrapers`** - Web scraping scripts for CubeCobra data
 - **`/scripts/data_processing`** - Data transformation and cleaning scripts
+- **`/scripts/venv`** - Virtual environment for scripts (not committed to git)
+- **`/scripts/requirements.txt`** - Python dependencies for scripts
+
+#### Dependencies
+- **beautifulsoup4** - HTML parsing for web scraping
+- **requests** - HTTP library for API calls
+- **selenium** - Web browser automation for dynamic content
+- **pandas** - Data manipulation and analysis
+- **numpy** - Numerical computing
+- **httpx** - Async HTTP client
+- **python-dotenv** - Environment variable management
 
 ### `/backend`
 FastAPI application serving the recommender engine.
@@ -19,6 +43,25 @@ FastAPI application serving the recommender engine.
   - **`/backend/app/core`** - Core configuration (database, settings)
   - **`/backend/app/services`** - Business logic and services
 - **`/backend/tests`** - Backend test suite
+- **`/backend/venv`** - Virtual environment for backend (not committed to git)
+- **`/backend/run.py`** - Development server script
+- **`/backend/requirements.txt`** - Python dependencies
+
+#### Technology Stack
+- **FastAPI** - Modern async web framework
+- **SQLModel** - SQL database ORM based on Pydantic and SQLAlchemy
+- **Uvicorn** - ASGI server for running FastAPI
+- **Pydantic** - Data validation using Python type annotations
+- **SQLite** - Lightweight database for local storage
+- **httpx** - Async HTTP client for external API calls
+
+#### Key Features
+- **Async/await support** - Built on ASGI for high-performance async operations
+- **Automatic API documentation** - Interactive docs at `/docs` (Swagger UI) and `/redoc`
+- **Type safety** - Full type hints with Pydantic validation
+- **CORS middleware** - Pre-configured for frontend integration
+- **Database migrations** - Automatic table creation via SQLModel on startup
+- **Health checks** - `/api/v1/health` endpoint for monitoring
 
 ### `/frontend`
 React with TypeScript UI for inspecting data and recommendations.

@@ -20,6 +20,47 @@ The Backend is written in Python using FastAPI and is providing the content for 
 
 # Setup
 
+## Prerequisites
+- Python 3.8 or higher
+- Node.js 16 or higher
+- npm or yarn
+
+## Virtual Environment Setup
+
+This project uses virtual environments to isolate Python dependencies for both the backend and scripts.
+
+### Quick Setup (Recommended)
+
+Run the setup scripts from the project root:
+
+```bash
+# Setup backend virtual environment
+./setup_backend.sh
+
+# Setup scripts virtual environment
+./setup_scripts.sh
+```
+
+### Manual Setup
+
+#### Backend Virtual Environment
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+#### Scripts Virtual Environment
+```bash
+cd scripts
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
 ## Frontend Setup
 The frontend is built with Create React App and TypeScript.
 
@@ -34,3 +75,26 @@ Available scripts:
 - `npm run build` - Creates an optimized production build
 - `npm test` - Runs the test suite
 - `npm run eject` - Ejects from Create React App (one-way operation)
+
+## Backend Setup
+The backend is built with FastAPI and SQLModel.
+
+**Important:** Make sure to activate the virtual environment first!
+
+```bash
+cd backend
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+python run.py
+```
+
+The API will be available at:
+- API: http://localhost:8000
+- Interactive docs: http://localhost:8000/docs
+- Health check: http://localhost:8000/api/v1/health
+
+Available features:
+- FastAPI application with async support
+- SQLModel for database ORM with SQLite
+- CORS middleware configured for frontend integration
+- Automatic API documentation (Swagger UI)
+- Database initialization on startup
