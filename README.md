@@ -13,5 +13,7 @@ The backend should interact with the data through SQLModel (which is Pydantic ba
 # UI
 We will start with a simple UI that helps us develop. Think of this as a set of visual tools. We should be able to inspect the data as well as recommendations.
 
+Let's use React with Typescript for the UI.
+
 # Backend
 The Backend is written in Python using FastAPI and is providing the content for the UI.
