@@ -19,8 +19,19 @@ const CardTab: React.FC = () => {
     setError(null);
 
     try {
+      // Determine if input is an identifier (UUID or integer) or a card name
+      const trimmedInput = cardInput.trim();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedInput);
+      const isNumeric = /^\d+$/.test(trimmedInput);
+      const isIdentifier = isUuid || isNumeric;
+
+      // Build the appropriate endpoint
+      const endpoint = isIdentifier
+        ? `http://localhost:8000/api/v1/cards/${encodeURIComponent(cardInput)}`
+        : `http://localhost:8000/api/v1/cards/name/${encodeURIComponent(cardInput)}`;
+
       // Call the backend API to fetch card data
-      const response = await fetch(`http://localhost:8000/api/cards/${encodeURIComponent(cardInput)}`);
+      const response = await fetch(endpoint);
 
       if (!response.ok) {
         throw new Error('Card not found');
