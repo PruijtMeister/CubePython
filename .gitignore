@@ -4,6 +4,9 @@ venv/
 env/
 .env/
 
+# Environment variables
+.env
+
 # Python
 __pycache__/
 *.py[cod]
@@ -47,6 +50,12 @@ Thumbs.db
 # Script outputs
 output_*.html
 output_*.json
+cube_data/
+
+# Data dumps
+data/
+*.json.gz
+cube_data_dump.json
 
 # UV lock file
 uv.lock
