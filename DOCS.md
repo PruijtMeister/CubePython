@@ -86,6 +86,32 @@ lightning_bolt = db.get_card_by_name("Lightning Bolt")
 results = db.search_cards("bolt", limit=10)
 ```
 
+**CubeDatabase** (`/backend/app/services/cube_database.py`)
+- Manages CubeCobra cube data with local caching
+- Fetches cube data by cube ID from CubeCobra
+- Stores each cube as a separate JSON file in local cache
+- Provides in-memory caching for frequently accessed cubes
+- Automatically downloads cube data on first request
+- Data is cached locally in `backend/data/cubes/{cube_id}.json`
+- Includes placeholder `fetch_cube` function for CubeCobra integration
+
+Usage:
+```python
+from backend.app.services.cube_database import CubeDatabase
+
+# Initialize database
+db = CubeDatabase()
+
+# Get cube by ID (fetches and caches if not already local)
+cube_data = await db.get_cube("1fdv1")
+
+# Check if cube is cached
+is_cached = db.is_cube_cached("1fdv1")
+
+# Get list of all cached cubes
+cached_ids = db.get_cached_cube_ids()
+```
+
 ### `/frontend`
 React with TypeScript UI for inspecting data and recommendations.
 
