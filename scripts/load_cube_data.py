@@ -12,44 +12,110 @@ from dotenv import load_dotenv
 
 # Configuration
 LOCAL_DATA_PATH = Path('cube_data/cube_data_dump.json')
+LOCAL_FILTERED_DATA_PATH = Path('cube_data/cube_data_dump_filtered.json')
 DATA_DIR = Path('cube_data')
 
 # Load environment variables
 load_dotenv()
 
 
-def load_cube_data():
+def load_cube_data(filtered=True):
     """
     Load cube data from local file or download from S3 if not present.
     Checks if S3 file is newer and re-downloads if needed.
 
+    Args:
+        filtered: If True, return filtered data. If False, return full dataset.
+
     Returns:
-        dict: The cube data loaded from JSON
+        list: The cube data (filtered or full) loaded from JSON
     """
-    # Check if local file exists
-    if LOCAL_DATA_PATH.exists():
-        print(f"Local file found: {LOCAL_DATA_PATH}")
+    # Check if we need to update from S3
+    needs_s3_update = False
 
-        # Check if S3 file is newer
-        if is_s3_file_newer():
-            print("S3 file is newer than local file. Downloading updated version...")
-            return download_from_s3()
-
-        # Load local file
-        print("Local file is up to date. Loading from local storage...")
-        try:
-            with open(LOCAL_DATA_PATH, 'r') as f:
-                data = json.load(f)
-            print(f"Successfully loaded {len(data)} cubes from local file")
-            return data
-        except json.JSONDecodeError as e:
-            print(f"Error parsing local file: {e}")
-            print("Attempting to download fresh copy from S3...")
-            return download_from_s3()
-    else:
+    if not LOCAL_DATA_PATH.exists():
         print(f"Local file not found: {LOCAL_DATA_PATH}")
+        needs_s3_update = True
+    elif is_s3_file_newer():
+        print("S3 file is newer than local file. Downloading updated version...")
+        needs_s3_update = True
+
+    # Download from S3 if needed (this updates both full and filtered dumps)
+    if needs_s3_update:
         print("Attempting to download from S3...")
-        return download_from_s3()
+        download_and_process_from_s3()
+
+    # Now load the requested version
+    if filtered:
+        # Check if filtered file exists
+        if not LOCAL_FILTERED_DATA_PATH.exists():
+            print("Filtered file not found. Creating from full dump...")
+            full_data = load_full_data()
+            filtered_data = filter_cubes(full_data)
+            save_filtered_data(filtered_data)
+            return filtered_data
+        else:
+            print(f"Loading filtered data from {LOCAL_FILTERED_DATA_PATH}")
+            return load_filtered_data()
+    else:
+        print("Loading full unfiltered data...")
+        return load_full_data()
+
+
+def load_full_data():
+    """Load the full unfiltered cube data from local file."""
+    print(f"Loading full data from {LOCAL_DATA_PATH}")
+    with open(LOCAL_DATA_PATH, 'r') as f:
+        data = json.load(f)
+    print(f"Successfully loaded {len(data)} cubes (unfiltered)")
+    return data
+
+
+def load_filtered_data():
+    """Load the filtered cube data from local file."""
+    with open(LOCAL_FILTERED_DATA_PATH, 'r') as f:
+        data = json.load(f)
+    print(f"Successfully loaded {len(data)} cubes (filtered)")
+    return data
+
+
+def save_filtered_data(filtered_data):
+    """Save filtered cube data to local file."""
+    print(f"Saving filtered data to {LOCAL_FILTERED_DATA_PATH}")
+    with open(LOCAL_FILTERED_DATA_PATH, 'w') as f:
+        json.dump(filtered_data, f)
+    print(f"Saved {len(filtered_data)} filtered cubes")
+
+
+def filter_cubes(cube_data):
+    """
+    Filter cube data to remove unwanted cubes.
+
+    Filters out:
+    - Cubes with names starting with 'Clone'
+    - Cubes with empty following arrays (less than 1 follower)
+
+    Args:
+        cube_data: List of cube dictionaries
+
+    Returns:
+        list: Filtered cube data
+    """
+    if not isinstance(cube_data, list):
+        return cube_data
+
+    original_count = len(cube_data)
+
+    filtered_data = [
+        cube for cube in cube_data
+        if not cube.get('name', '').startswith('Clone')
+        and len(cube.get('following', [])) >= 2
+    ]
+
+    filtered_count = original_count - len(filtered_data)
+    print(f"Filtered out {filtered_count} cubes ({len(filtered_data)} remaining)")
+
+    return filtered_data
 
 
 def get_s3_credentials():
@@ -124,12 +190,12 @@ def is_s3_file_newer():
         return False
 
 
-def download_from_s3():
+def download_and_process_from_s3():
     """
-    Download cube data from AWS S3.
+    Download cube data from AWS S3 and create both full and filtered versions.
 
-    Returns:
-        dict: The cube data loaded from JSON
+    This function downloads the full dataset from S3, saves it locally,
+    and also creates and saves a filtered version.
     """
     # Get AWS credentials
     aws_access_key, aws_secret_key, aws_region, bucket_name, s3_key = get_s3_credentials()
@@ -153,12 +219,16 @@ def download_from_s3():
         s3_client.download_file(bucket_name, s3_key, str(LOCAL_DATA_PATH))
         print(f"Successfully downloaded to: {LOCAL_DATA_PATH}")
 
-        # Load and return the data
+        # Load the data
         with open(LOCAL_DATA_PATH, 'r') as f:
-            data = json.load(f)
+            full_data = json.load(f)
 
-        print(f"Successfully loaded {len(data)} cubes")
-        return data
+        print(f"Successfully loaded {len(full_data)} cubes from S3")
+
+        # Create and save filtered version
+        print("Creating filtered version...")
+        filtered_data = filter_cubes(full_data)
+        save_filtered_data(filtered_data)
 
     except NoCredentialsError:
         raise ValueError("AWS credentials not found or invalid")
@@ -201,7 +271,7 @@ def get_cube_by_id(cube_id, cube_data=None):
 def main():
     """Example usage of load_cube_data function."""
     try:
-        cube_data = load_cube_data()
+        cube_data = load_cube_data(filtered=True)
         print(f"\n{'='*60}")
         print(f"Total cubes available: {len(cube_data)}")
 
@@ -217,6 +287,8 @@ def main():
             print(f"  Name: {sample_cube.get('name')}")
             if 'cards' in sample_cube:
                 print(f"  Cards: {len(sample_cube.get('cards', []))}")
+            if 'following' in sample_cube:
+                print(f"  Followers: {len(sample_cube.get('following', []))}")
 
     except Exception as e:
         print(f"Error: {e}")
