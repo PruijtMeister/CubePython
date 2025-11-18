@@ -158,6 +158,53 @@ recommender.save("models/my_recommender.pkl")
 loaded_recommender = MyRecommender.load("models/my_recommender.pkl")
 ```
 
+**CollaborativeFilteringRecommender** (`/backend/app/services/recommender/collaborative_filtering.py`)
+- Cube-cube collaborative filtering implementation
+- Finds cubes similar to target cube based on shared cards
+- Recommends cards appearing in similar cubes but not in target cube
+- Uses Jaccard similarity coefficient for cube-cube similarity
+- Scores recommendations based on appearance frequency weighted by similarity
+
+Algorithm overview:
+1. During `fit()`: Builds indices of which cards appear in which cubes
+2. During `recommend()`:
+   - Finds top N most similar cubes to the target cube
+   - Identifies candidate cards from similar cubes
+   - Scores cards by weighted appearance frequency
+   - Returns top recommendations with explanations
+
+Key features:
+- Extracts card IDs using `oracle_id` (preferred) or `name` (fallback)
+- Normalizes recommendation scores for consistency
+- Provides explanatory reasons for each recommendation
+- Efficient similarity calculation using set operations
+
+Usage:
+```python
+from backend.app.services.recommender import CollaborativeFilteringRecommender
+from backend.app.models.cube import CubeModel
+
+# Initialize and train
+recommender = CollaborativeFilteringRecommender()
+recommender.fit(training_cubes)  # List[CubeModel]
+
+# Generate recommendations for a target cube
+recommendations = recommender.recommend(
+    cube=target_cube,
+    n_recommendations=10
+)
+
+# Each recommendation contains:
+# - 'card_id': Card identifier (oracle_id or name)
+# - 'card_name': Human-readable card name
+# - 'score': Normalized recommendation score (0.0 to 1.0)
+# - 'reason': Explanation (e.g., "Appears in 15/50 similar cubes")
+
+# Save and load trained model
+recommender.save("models/collaborative_filtering.pkl")
+loaded = CollaborativeFilteringRecommender.load("models/collaborative_filtering.pkl")
+```
+
 #### API Routes
 
 **Cards API** (`/backend/app/api/cards.py`)
