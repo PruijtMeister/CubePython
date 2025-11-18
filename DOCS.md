@@ -70,6 +70,9 @@ FastAPI application serving the recommender engine.
 - Includes helper methods for searching cards by name, Oracle ID, or text query
 - Data is cached locally in `backend/data/cards/oracle-cards.json`
 - Dataset updates available every 12 hours from Scryfall
+- Automatic version checking: compares local data version with Scryfall's latest
+- Auto-updates local data when newer version is available
+- Version tracking stored in `backend/data/cards/version.txt`
 
 Usage:
 ```python

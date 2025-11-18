@@ -29,6 +29,7 @@ class CardDatabase:
     Attributes:
         data_dir: Path to the directory where card data is stored
         oracle_cards_path: Path to the oracle-cards.json file
+        version_path: Path to the version.txt file tracking the data version
         cards: List of card dictionaries loaded from the Oracle Cards file
 
     Example:
@@ -45,6 +46,7 @@ class CardDatabase:
     BULK_DATA_ENDPOINT = f"{settings.scryfall_api_url}/bulk-data"
     ORACLE_CARDS_TYPE = "oracle_cards"
     ORACLE_CARDS_FILENAME = "oracle-cards.json"
+    VERSION_FILENAME = "version.txt"
 
     def __init__(self, data_dir: Path | None = None):
         """
@@ -65,6 +67,7 @@ class CardDatabase:
             self.data_dir = data_dir
 
         self.oracle_cards_path = self.data_dir / self.ORACLE_CARDS_FILENAME
+        self.version_path = self.data_dir / self.VERSION_FILENAME
         self.cards: list[dict[str, Any]] = []
 
     @classmethod
@@ -92,17 +95,86 @@ class CardDatabase:
 
     async def _ensure_data(self) -> None:
         """
-        Ensure the Oracle Cards data exists, downloading if necessary.
+        Ensure the Oracle Cards data is up to date.
 
-        Checks if the oracle-cards.json file exists. If not, fetches the
-        bulk data list from Scryfall and downloads the Oracle Cards dataset.
+        Checks if the oracle-cards.json file exists. If not, downloads it.
+        If it exists, compares the local version with the latest version
+        available on Scryfall and updates if a newer version is available.
         """
-        if self.oracle_cards_path.exists():
-            print(f"Oracle Cards data found at {self.oracle_cards_path}")
+        # If data doesn't exist, download it
+        if not self.oracle_cards_path.exists():
+            print("Oracle Cards data not found. Downloading from Scryfall...")
+            await self._download_oracle_cards()
             return
 
-        print("Oracle Cards data not found. Downloading from Scryfall...")
-        await self._download_oracle_cards()
+        # Data exists, check if update is available
+        print(f"Oracle Cards data found at {self.oracle_cards_path}")
+
+        local_version = self._read_local_version()
+        remote_version = await self._fetch_remote_version()
+
+        if local_version is None:
+            print("No version information found. Downloading latest version...")
+            await self._download_oracle_cards()
+        elif remote_version != local_version:
+            print(f"Update available!")
+            print(f"  Local version: {local_version}")
+            print(f"  Remote version: {remote_version}")
+            print("Downloading updated Oracle Cards data...")
+            await self._download_oracle_cards()
+        else:
+            print(f"Oracle Cards data is up to date (version: {local_version})")
+
+    def _read_local_version(self) -> str | None:
+        """
+        Read the local version from version.txt.
+
+        Returns:
+            The version timestamp string, or None if the file doesn't exist.
+        """
+        if not self.version_path.exists():
+            return None
+
+        try:
+            return self.version_path.read_text().strip()
+        except Exception as e:
+            print(f"Warning: Failed to read version file: {e}")
+            return None
+
+    def _write_local_version(self, version: str) -> None:
+        """
+        Write the version timestamp to version.txt.
+
+        Args:
+            version: The version timestamp string to save.
+        """
+        try:
+            self.version_path.write_text(version)
+        except Exception as e:
+            print(f"Warning: Failed to write version file: {e}")
+
+    async def _fetch_remote_version(self) -> str | None:
+        """
+        Fetch the latest version timestamp from Scryfall's bulk data API.
+
+        Returns:
+            The updated_at timestamp string from Scryfall, or None if unavailable.
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(self.BULK_DATA_ENDPOINT)
+                response.raise_for_status()
+                bulk_data = response.json()
+
+                # Find the Oracle Cards object
+                for item in bulk_data.get("data", []):
+                    if item.get("type") == self.ORACLE_CARDS_TYPE:
+                        return item.get("updated_at")
+
+                return None
+        except Exception as e:
+            print(f"Warning: Failed to fetch remote version: {e}")
+            return None
 
     async def _download_oracle_cards(self) -> None:
         """
@@ -170,6 +242,12 @@ class CardDatabase:
                             print(f"  Downloaded {downloaded_mb:.2f} MB...")
 
             print(f"Successfully downloaded Oracle Cards to {self.oracle_cards_path}")
+
+            # Save the version information
+            updated_at = oracle_cards_obj.get("updated_at")
+            if updated_at:
+                self._write_local_version(updated_at)
+                print(f"Saved version information: {updated_at}")
 
     def _load_cards(self) -> None:
         """
