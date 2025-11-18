@@ -1,31 +1,28 @@
 #!/bin/bash
-# Setup script for backend virtual environment
+# Setup script for backend virtual environment using UV
 
-echo "Setting up backend virtual environment..."
+echo "Setting up backend virtual environment with UV..."
 
-# Check if venv exists
-if [ -d "backend/venv" ]; then
-    echo "Virtual environment already exists at backend/venv"
-    read -p "Do you want to recreate it? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        rm -rf backend/venv
-    else
-        echo "Using existing virtual environment"
-        exit 0
-    fi
+# Check if UV is installed
+if ! command -v uv &> /dev/null; then
+    echo "UV is not installed. Installing UV..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    echo "Please restart your shell or run: source $HOME/.cargo/env"
+    exit 1
 fi
 
-# Create virtual environment
 cd backend
-python3 -m venv venv
 
-# Activate and install dependencies
-echo "Activating virtual environment and installing dependencies..."
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+# Check if venv exists
+if [ -d ".venv" ]; then
+    echo "Virtual environment already exists. Syncing dependencies..."
+    uv sync
+else
+    echo "Creating virtual environment and installing dependencies..."
+    uv venv
+    uv sync
+fi
 
 echo ""
 echo "Backend virtual environment setup complete!"
-echo "To activate: cd backend && source venv/bin/activate"
+echo "To activate: cd backend && source .venv/bin/activate"
