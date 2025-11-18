@@ -96,3 +96,28 @@ Available features:
 - CORS middleware configured for frontend integration
 - Automatic API documentation (Swagger UI)
 - Database initialization on startup
+
+## Running Both Frontend and Backend
+
+For development, you can run both the frontend and backend simultaneously with auto-reload enabled using the provided start script:
+
+```bash
+# From the project root
+./start.sh
+```
+
+This script will:
+- Automatically activate the virtual environment
+- Start the backend with hot-reload on http://localhost:8000
+- Start the frontend with hot-reload on http://localhost:3000
+- Display logs in `backend.log` and `frontend.log`
+- Stop both services gracefully when you press Ctrl+C
+
+**Note:** The script creates log files in the project root. You can monitor them in real-time:
+```bash
+# Watch backend logs
+tail -f backend.log
+
+# Watch frontend logs
+tail -f frontend.log
+```
