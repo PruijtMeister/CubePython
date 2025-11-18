@@ -1,5 +1,5 @@
 """
-Cube-Cube Collaborative Filtering Recommender.
+Cube-Based Collaborative Filtering Recommender.
 
 This module implements a collaborative filtering approach for cube recommendations
 based on cube-cube similarity. It finds cubes similar to the target cube and
@@ -11,12 +11,13 @@ from collections import defaultdict
 import numpy as np
 
 from app.models.cube import CubeModel
+from app.models.recommender import CubeBasedCollaborativeFilteringConfig
 from app.services.recommender.base import Recommender
 
 
-class CollaborativeFilteringRecommender(Recommender):
+class CubeBasedCollaborativeFilteringRecommender(Recommender):
     """
-    Cube-cube collaborative filtering recommender.
+    Cube-based collaborative filtering recommender.
 
     This recommender finds cubes similar to a target cube based on their shared
     cards, then recommends cards that appear in similar cubes but not in the
@@ -26,11 +27,22 @@ class CollaborativeFilteringRecommender(Recommender):
     - How frequently it appears in similar cubes
     - The similarity scores of cubes containing the card
     - The card's popularity across all cubes (as a tiebreaker)
+
+    Configuration parameters:
+    - n_similar_cubes: Number of similar cubes to consider
+    - min_similarity: Minimum similarity threshold for cubes
+    - similarity_metric: Method for calculating similarity (currently only Jaccard)
     """
 
-    def __init__(self) -> None:
-        """Initialize the collaborative filtering recommender."""
+    def __init__(self, config: Optional[CubeBasedCollaborativeFilteringConfig] = None) -> None:
+        """
+        Initialize the cube-based collaborative filtering recommender.
+
+        Args:
+            config: Configuration for the recommender. If None, uses defaults.
+        """
         super().__init__()
+        self.config = config or CubeBasedCollaborativeFilteringConfig()
         self.cube_cards: Dict[str, Set[str]] = {}
         self.card_cubes: Dict[str, Set[str]] = defaultdict(set)
         self.card_names: Dict[str, str] = {}
@@ -76,7 +88,7 @@ class CollaborativeFilteringRecommender(Recommender):
 
         return intersection / union if union > 0 else 0.0
 
-    def fit(self, cubes: List[CubeModel]) -> "CollaborativeFilteringRecommender":
+    def fit(self, cubes: List[CubeModel]) -> "CubeBasedCollaborativeFilteringRecommender":
         """
         Train the recommender on a list of cube models.
 
@@ -123,7 +135,8 @@ class CollaborativeFilteringRecommender(Recommender):
         self,
         target_cube_id: str,
         target_cards: Set[str],
-        n_similar: int = 50
+        n_similar: Optional[int] = None,
+        min_similarity: Optional[float] = None
     ) -> List[tuple[str, float]]:
         """
         Find cubes most similar to the target cube.
@@ -131,11 +144,17 @@ class CollaborativeFilteringRecommender(Recommender):
         Args:
             target_cube_id: ID of the target cube (to exclude from results)
             target_cards: Set of card IDs in the target cube
-            n_similar: Number of similar cubes to return
+            n_similar: Number of similar cubes to return (uses config if not specified)
+            min_similarity: Minimum similarity threshold (uses config if not specified)
 
         Returns:
             List of (cube_id, similarity_score) tuples, sorted by similarity descending
         """
+        if n_similar is None:
+            n_similar = self.config.n_similar_cubes
+        if min_similarity is None:
+            min_similarity = self.config.min_similarity
+
         similarities = []
 
         for cube_id, cube_cards in self.cube_cards.items():
@@ -145,8 +164,8 @@ class CollaborativeFilteringRecommender(Recommender):
 
             similarity = self._calculate_jaccard_similarity(target_cards, cube_cards)
 
-            # Only consider cubes with non-zero similarity
-            if similarity > 0:
+            # Only consider cubes above the minimum similarity threshold
+            if similarity >= min_similarity:
                 similarities.append((cube_id, similarity))
 
         # Sort by similarity descending and take top n
@@ -197,11 +216,10 @@ class CollaborativeFilteringRecommender(Recommender):
         if not target_cards:
             raise ValueError("Target cube has no valid cards")
 
-        # Find similar cubes
+        # Find similar cubes using configured parameters
         similar_cubes = self._find_similar_cubes(
             cube.id,
-            target_cards,
-            n_similar=50
+            target_cards
         )
 
         if not similar_cubes:

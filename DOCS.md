@@ -158,17 +158,19 @@ recommender.save("models/my_recommender.pkl")
 loaded_recommender = MyRecommender.load("models/my_recommender.pkl")
 ```
 
-**CollaborativeFilteringRecommender** (`/backend/app/services/recommender/collaborative_filtering.py`)
-- Cube-cube collaborative filtering implementation
+**CubeBasedCollaborativeFilteringRecommender** (`/backend/app/services/recommender/collaborative_filtering.py`)
+- Cube-cube collaborative filtering implementation (default algorithm)
 - Finds cubes similar to target cube based on shared cards
 - Recommends cards appearing in similar cubes but not in target cube
 - Uses Jaccard similarity coefficient for cube-cube similarity
 - Scores recommendations based on appearance frequency weighted by similarity
+- Configurable parameters: n_similar_cubes, min_similarity, similarity_metric
 
 Algorithm overview:
 1. During `fit()`: Builds indices of which cards appear in which cubes
 2. During `recommend()`:
-   - Finds top N most similar cubes to the target cube
+   - Finds top N most similar cubes to the target cube (configurable)
+   - Filters cubes below minimum similarity threshold (configurable)
    - Identifies candidate cards from similar cubes
    - Scores cards by weighted appearance frequency
    - Returns top recommendations with explanations
@@ -178,14 +180,26 @@ Key features:
 - Normalizes recommendation scores for consistency
 - Provides explanatory reasons for each recommendation
 - Efficient similarity calculation using set operations
+- Accepts configuration object for customizing behavior
 
 Usage:
 ```python
-from backend.app.services.recommender import CollaborativeFilteringRecommender
+from backend.app.services.recommender import CubeBasedCollaborativeFilteringRecommender
+from backend.app.models.recommender import CubeBasedCollaborativeFilteringConfig
 from backend.app.models.cube import CubeModel
 
-# Initialize and train
-recommender = CollaborativeFilteringRecommender()
+# Initialize with custom configuration
+config = CubeBasedCollaborativeFilteringConfig(
+    n_similar_cubes=100,
+    min_similarity=0.1,
+    similarity_metric="jaccard"
+)
+recommender = CubeBasedCollaborativeFilteringRecommender(config=config)
+
+# Or use defaults
+recommender = CubeBasedCollaborativeFilteringRecommender()
+
+# Train on cube data
 recommender.fit(training_cubes)  # List[CubeModel]
 
 # Generate recommendations for a target cube
@@ -201,8 +215,8 @@ recommendations = recommender.recommend(
 # - 'reason': Explanation (e.g., "Appears in 15/50 similar cubes")
 
 # Save and load trained model
-recommender.save("models/collaborative_filtering.pkl")
-loaded = CollaborativeFilteringRecommender.load("models/collaborative_filtering.pkl")
+recommender.save("models/cube_based_cf.pkl")
+loaded = CubeBasedCollaborativeFilteringRecommender.load("models/cube_based_cf.pkl")
 ```
 
 #### API Routes
@@ -270,6 +284,169 @@ Response format:
 Notes:
 - If a cube is not in the local cache and the CubeCobra fetch implementation is not available, the endpoint will return a 404 with a helpful error message
 - Cubes are cached locally in `backend/data/cubes/{cube_id}.json` for fast subsequent access
+
+**Recommenders API** (`/backend/app/api/recommenders.py`)
+- Provides endpoints for algorithm discovery and generating recommendations
+- All routes are prefixed with `/api/v1/recommenders`
+- Supports configurable recommendation algorithms with dynamic parameter tuning
+
+Available endpoints:
+- `GET /api/v1/recommenders/algorithms` - List all available algorithms with their schemas
+- `POST /api/v1/recommenders/recommend` - Generate recommendations with custom algorithm configuration
+
+Example usage:
+```bash
+# Get available algorithms with their parameter schemas
+curl "http://localhost:8000/api/v1/recommenders/algorithms"
+
+# Generate recommendations with default algorithm and parameters
+curl -X POST "http://localhost:8000/api/v1/recommenders/recommend" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cube_id": "1fdv1",
+    "n_recommendations": 10
+  }'
+
+# Generate recommendations with custom algorithm configuration
+curl -X POST "http://localhost:8000/api/v1/recommenders/recommend" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cube_id": "1fdv1",
+    "algorithm_config": {
+      "type": "cube_based_collaborative_filtering",
+      "n_similar_cubes": 100,
+      "min_similarity": 0.1,
+      "similarity_metric": "jaccard"
+    },
+    "n_recommendations": 20
+  }'
+```
+
+Response format for `/algorithms`:
+```json
+[
+  {
+    "type": "cube_based_collaborative_filtering",
+    "name": "Cube-Based Collaborative Filtering",
+    "description": "Finds cubes similar to yours based on card overlap...",
+    "default_config": {
+      "type": "cube_based_collaborative_filtering",
+      "n_similar_cubes": 50,
+      "min_similarity": 0.0,
+      "similarity_metric": "jaccard"
+    },
+    "config_schema": {
+      "type": "object",
+      "properties": {
+        "n_similar_cubes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "default": 50,
+          "description": "Number of similar cubes to consider..."
+        },
+        ...
+      }
+    },
+    "is_default": true
+  }
+]
+```
+
+Response format for `/recommend`:
+```json
+{
+  "cube_id": "1fdv1",
+  "algorithm_type": "cube_based_collaborative_filtering",
+  "recommendations": [
+    {
+      "card_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "card_name": "Lightning Bolt",
+      "score": 0.85,
+      "reason": "Appears in 42/50 similar cubes (avg similarity: 85.00%)"
+    }
+  ],
+  "n_recommendations": 1
+}
+```
+
+Key features:
+- **Algorithm Discovery**: Frontend can dynamically discover available algorithms and their parameters
+- **JSON Schema Support**: Each algorithm provides a JSON schema for its configuration, enabling dynamic UI generation
+- **Type Safety**: Uses Pydantic discriminated unions for algorithm configurations
+- **Default Algorithm**: Cube-Based Collaborative Filtering is the default when no algorithm is specified
+- **Parameter Validation**: All parameters are validated with appropriate ranges and defaults
+- **On-Demand Training**: Recommenders are trained on all cached cubes when generating recommendations
+
+Notes:
+- Requires at least one cube to be cached for training
+- Training happens on-demand for each request (future optimization: cache fitted models)
+- The `config_schema` field in the algorithms response can be used to dynamically build UI forms
+
+#### Pydantic Models
+
+**Recommender Models** (`/backend/app/models/recommender.py`)
+- Pydantic models for recommender algorithm configurations and API requests/responses
+- Provides type-safe configuration with validation
+- Supports discriminated unions for different algorithm types
+- JSON schema generation for dynamic UI forms
+
+Available models:
+
+`CubeBasedCollaborativeFilteringConfig`:
+- Configuration for the Cube-Based Collaborative Filtering algorithm
+- Fields:
+  - `type`: Literal["cube_based_collaborative_filtering"] - Algorithm identifier
+  - `n_similar_cubes`: int (1-200, default: 50) - Number of similar cubes to consider
+  - `min_similarity`: float (0.0-1.0, default: 0.0) - Minimum similarity threshold
+  - `similarity_metric`: Literal["jaccard"] - Similarity calculation method
+
+`RecommenderAlgorithmInfo`:
+- Metadata about a recommender algorithm
+- Fields:
+  - `type`: str - Algorithm type identifier
+  - `name`: str - Human-readable algorithm name
+  - `description`: str - Description of how the algorithm works
+  - `default_config`: dict - Default configuration parameters
+  - `config_schema`: dict - JSON schema for configuration parameters
+  - `is_default`: bool - Whether this is the default algorithm
+
+`RecommendationRequest`:
+- Request model for generating recommendations
+- Fields:
+  - `cube_id`: str - CubeCobra cube ID
+  - `algorithm_config`: RecommenderConfig - Algorithm configuration (defaults to CubeBasedCollaborativeFiltering)
+  - `n_recommendations`: int (1-100, default: 10) - Number of recommendations to return
+
+`RecommendationResponse`:
+- Response model for recommendations
+- Fields:
+  - `cube_id`: str - CubeCobra cube ID that was analyzed
+  - `algorithm_type`: str - Algorithm type that was used
+  - `recommendations`: list[dict] - List of recommended cards with scores and reasons
+  - `n_recommendations`: int - Number of recommendations returned
+
+Usage:
+```python
+from app.models.recommender import (
+    CubeBasedCollaborativeFilteringConfig,
+    RecommendationRequest,
+    RecommendationResponse
+)
+
+# Create algorithm configuration
+config = CubeBasedCollaborativeFilteringConfig(
+    n_similar_cubes=100,
+    min_similarity=0.1
+)
+
+# Create recommendation request
+request = RecommendationRequest(
+    cube_id="1fdv1",
+    algorithm_config=config,
+    n_recommendations=20
+)
+```
 
 ### `/frontend`
 React with TypeScript UI for inspecting data and recommendations.

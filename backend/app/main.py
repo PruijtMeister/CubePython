@@ -7,6 +7,7 @@ from app.core import settings, init_db
 from app.api.health import router as health_router
 from app.api.cards import router as cards_router
 from app.api.cubes import router as cubes_router
+from app.api.recommenders import router as recommenders_router
 from app.services.card_database import CardDatabase
 from app.services.cube_database import CubeDatabase
 
@@ -52,6 +53,7 @@ app.add_middleware(
 app.include_router(health_router, prefix=settings.api_v1_prefix, tags=["health"])
 app.include_router(cards_router, prefix=f"{settings.api_v1_prefix}/cards", tags=["cards"])
 app.include_router(cubes_router, prefix=f"{settings.api_v1_prefix}/cubes", tags=["cubes"])
+app.include_router(recommenders_router, prefix=f"{settings.api_v1_prefix}/recommenders", tags=["recommenders"])
 
 
 @app.get("/")
