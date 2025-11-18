@@ -1,6 +1,6 @@
 """Recommender module for cube recommendation systems."""
 
 from app.services.recommender.base import Recommender
-from app.services.recommender.collaborative_filtering import CollaborativeFilteringRecommender
+from app.services.recommender.collaborative_filtering import CubeBasedCollaborativeFilteringRecommender
 
-__all__ = ["Recommender", "CollaborativeFilteringRecommender"]
+__all__ = ["Recommender", "CubeBasedCollaborativeFilteringRecommender"]
