@@ -3,7 +3,6 @@ API routes for cube-related endpoints.
 """
 
 from fastapi import APIRouter, HTTPException, Request
-from typing import Any
 
 from app.models.cube import CubeModel
 
@@ -26,8 +25,8 @@ async def get_all_cube_identifiers(request: Request) -> list[str]:
     return cube_db.get_cached_cube_ids()
 
 
-@router.get("/{cube_id}", response_model=dict[str, Any])
-async def get_cube_by_id(cube_id: str, request: Request) -> dict[str, Any]:
+@router.get("/{cube_id}")
+async def get_cube_by_id(cube_id: str, request: Request) -> CubeModel:
     """
     Get a cube by its CubeCobra identifier.
 
@@ -38,7 +37,7 @@ async def get_cube_by_id(cube_id: str, request: Request) -> dict[str, Any]:
         cube_id: The CubeCobra cube ID (e.g., "1fdv1")
 
     Returns:
-        Cube data dictionary containing all cube information
+        Cube data model containing all cube information
 
     Raises:
         HTTPException: 404 if cube not found or cannot be fetched
@@ -58,7 +57,7 @@ async def get_cube_by_id(cube_id: str, request: Request) -> dict[str, Any]:
 
     try:
         cube_data = await cube_db.get_cube(cube_id)
-        return cube_data
+        return CubeModel.model_validate(cube_data)
     except FileNotFoundError:
         raise HTTPException(
             status_code=404,
