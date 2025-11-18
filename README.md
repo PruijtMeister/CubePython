@@ -24,48 +24,35 @@ The Backend is written in Python using FastAPI and is providing the content for 
 - Python 3.8 or higher
 - Node.js 16 or higher
 - npm or yarn
-- UV package manager (installed automatically by setup scripts)
+- UV package manager (installed automatically by setup script)
 
 ## Virtual Environment Setup
 
-This project uses [UV](https://github.com/astral-sh/uv), a fast Python package manager, to manage virtual environments and dependencies for both the backend and scripts.
+This project uses [UV](https://github.com/astral-sh/uv), a fast Python package manager, to manage the virtual environment and all Python dependencies.
 
 ### Quick Setup (Recommended)
 
-Run the setup scripts from the project root:
+Run the setup script from the project root:
 
 ```bash
-# Setup backend virtual environment
-./setup_backend.sh
-
-# Setup scripts virtual environment
-./setup_scripts.sh
+./setup.sh
 ```
 
-The setup scripts will automatically install UV if not already present.
+The setup script will automatically install UV if not already present, create a virtual environment, and install all dependencies.
 
 ### Manual Setup with UV
 
 If you prefer to set up manually:
 
-#### Install UV
 ```bash
+# Install UV
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
 
-#### Backend Virtual Environment
-```bash
-cd backend
+# Create virtual environment and install dependencies
 uv venv
 uv sync
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
 
-#### Scripts Virtual Environment
-```bash
-cd scripts
-uv venv
-uv sync
+# Activate the virtual environment
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
@@ -90,8 +77,11 @@ The backend is built with FastAPI and SQLModel.
 **Important:** Make sure to activate the virtual environment first!
 
 ```bash
-cd backend
+# Activate the virtual environment
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Run the backend
+cd backend
 python run.py
 ```
 
