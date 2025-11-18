@@ -14,6 +14,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
   useSortable,
+  arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Card, { CardData } from './Card';
@@ -174,48 +175,69 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Find source and destination piles
+    // Find source pile and card index
     let sourcePileIndex = -1;
-    let cardIndex = -1;
-    let destPileIndex = -1;
+    let activeCardIndex = -1;
 
     piles.forEach((pile, pileIdx) => {
       const idx = pile.cards.findIndex((c) => getCardId(c) === activeId);
       if (idx !== -1) {
         sourcePileIndex = pileIdx;
-        cardIndex = idx;
+        activeCardIndex = idx;
       }
     });
 
-    // Determine destination pile
-    if (overId.startsWith('pile-')) {
-      destPileIndex = piles.findIndex((p) => p.id === overId);
-    } else {
-      piles.forEach((pile, pileIdx) => {
-        if (pile.cards.some((c) => getCardId(c) === overId)) {
-          destPileIndex = pileIdx;
-        }
-      });
-    }
-
-    if (sourcePileIndex === -1 || destPileIndex === -1) {
+    if (sourcePileIndex === -1) {
       setActiveCard(null);
       return;
     }
 
-    // Move card between piles
-    const newPiles = [...piles];
-    const [movedCard] = newPiles[sourcePileIndex].cards.splice(cardIndex, 1);
+    // Determine destination pile and position
+    let destPileIndex = -1;
+    let overCardIndex = -1;
 
     if (overId.startsWith('pile-')) {
-      // Dropped on pile header/container
-      newPiles[destPileIndex].cards.push(movedCard);
+      // Dropped on pile container (empty area)
+      destPileIndex = piles.findIndex((p) => p.id === overId);
+      overCardIndex = -1; // Will add to end
     } else {
-      // Dropped on another card
-      const overCardIndex = newPiles[destPileIndex].cards.findIndex(
-        (c) => getCardId(c) === overId
-      );
-      newPiles[destPileIndex].cards.splice(overCardIndex, 0, movedCard);
+      // Dropped on a card
+      piles.forEach((pile, pileIdx) => {
+        const idx = pile.cards.findIndex((c) => getCardId(c) === overId);
+        if (idx !== -1) {
+          destPileIndex = pileIdx;
+          overCardIndex = idx;
+        }
+      });
+    }
+
+    if (destPileIndex === -1) {
+      setActiveCard(null);
+      return;
+    }
+
+    const newPiles = [...piles];
+
+    if (sourcePileIndex === destPileIndex) {
+      // Moving within the same pile - use arrayMove
+      if (overCardIndex !== -1) {
+        newPiles[sourcePileIndex].cards = arrayMove(
+          newPiles[sourcePileIndex].cards,
+          activeCardIndex,
+          overCardIndex
+        );
+      }
+    } else {
+      // Moving between different piles
+      const [movedCard] = newPiles[sourcePileIndex].cards.splice(activeCardIndex, 1);
+
+      if (overCardIndex === -1) {
+        // Dropped on empty area - add to end
+        newPiles[destPileIndex].cards.push(movedCard);
+      } else {
+        // Dropped on a card - insert before it
+        newPiles[destPileIndex].cards.splice(overCardIndex, 0, movedCard);
+      }
     }
 
     setPiles(newPiles);
