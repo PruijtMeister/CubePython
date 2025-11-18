@@ -10,7 +10,9 @@ from bs4 import BeautifulSoup
 CUBE_ID = '1fdv1'
 URL = f'https://cubecobra.com/cube/overview/{CUBE_ID}'
 OUTPUT_HTML = f'output_{CUBE_ID}.html'
+
 OUTPUT_JSON = f'output_{CUBE_ID}.json'
+
 
 def main():
     print(f"Fetching: {URL}")
@@ -46,7 +48,6 @@ def main():
     with open(OUTPUT_HTML, 'w', encoding='utf-8') as f:
         f.write(response.text)
     print(f"\nSaved HTML to: {OUTPUT_HTML}")
-
     # Save parsed info as JSON
     with open(OUTPUT_JSON, 'w', encoding='utf-8') as f:
         json.dump(info, f, indent=2)
@@ -55,6 +56,7 @@ def main():
     # Print summary
     print(f"\nPage Title: {info['title']}")
     print(f"Meta Tags: {len(info['meta_tags'])} found")
+
 
     print("\nDone!")
 
