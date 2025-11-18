@@ -57,13 +57,20 @@
 .pile-content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   min-height: 200px;
+  position: relative;
+  padding-top: 10px;
 }
 
 .sortable-card {
   cursor: grab;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, margin-top 0.2s;
+  position: relative;
+  margin-top: -130px;
+}
+
+.sortable-card:first-child {
+  margin-top: 0;
 }
 
 .sortable-card:active {
@@ -71,37 +78,57 @@
 }
 
 .sortable-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 200 !important;
 }
 
 .sortable-card .magic-card {
   margin: 0;
-  max-width: 100%;
+  max-width: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.sortable-card .card-image {
+  margin: 0;
+  border-radius: 8px;
+}
+
+.sortable-card .card-image img {
+  border-radius: 8px;
 }
 
 .empty-pile {
   border: 2px dashed #ccc;
   border-radius: 8px;
-  padding: 40px 20px;
+  padding: 30px 15px;
   text-align: center;
   color: #999;
   font-style: italic;
   background: white;
-  min-height: 150px;
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 13px;
+}
+
+.pile-over {
+  background: rgba(100, 150, 255, 0.05);
+  border-radius: 8px;
 }
 
 .drag-overlay {
   cursor: grabbing;
-  opacity: 0.8;
-  transform: rotate(-5deg);
+  opacity: 0.9;
+  transform: rotate(-3deg);
 }
 
 .drag-overlay .magic-card {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  max-width: 180px;
 }
 
 @media (max-width: 768px) {

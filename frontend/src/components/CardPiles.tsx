@@ -8,6 +8,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -46,9 +47,10 @@ const getManaCostValue = (manaCost?: string): number => {
 interface SortableCardProps {
   card: CardData;
   id: string;
+  index: number;
 }
 
-const SortableCard: React.FC<SortableCardProps> = ({ card, id }) => {
+const SortableCard: React.FC<SortableCardProps> = ({ card, id, index }) => {
   const {
     attributes,
     listeners,
@@ -62,6 +64,7 @@ const SortableCard: React.FC<SortableCardProps> = ({ card, id }) => {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 100 - index,
   };
 
   return (
@@ -74,6 +77,43 @@ const SortableCard: React.FC<SortableCardProps> = ({ card, id }) => {
     >
       <Card card={card} />
     </div>
+  );
+};
+
+// Droppable pile container component
+interface DroppablePileProps {
+  pileId: string;
+  cards: CardData[];
+  getCardId: (card: CardData) => string;
+}
+
+const DroppablePile: React.FC<DroppablePileProps> = ({ pileId, cards, getCardId }) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: pileId,
+  });
+
+  return (
+    <SortableContext
+      items={cards.map(getCardId)}
+      strategy={verticalListSortingStrategy}
+    >
+      <div
+        ref={setNodeRef}
+        className={`pile-content ${isOver ? 'pile-over' : ''}`}
+      >
+        {cards.map((card, index) => (
+          <SortableCard
+            key={getCardId(card)}
+            id={getCardId(card)}
+            card={card}
+            index={index}
+          />
+        ))}
+        {cards.length === 0 && (
+          <div className="empty-pile">Drop cards here</div>
+        )}
+      </div>
+    </SortableContext>
   );
 };
 
@@ -204,23 +244,11 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
             <div key={pile.id} className="pile" data-pile-id={pile.id}>
               <h3 className="pile-header">{pile.label}</h3>
               <div className="pile-count">{pile.cards.length} cards</div>
-              <SortableContext
-                items={pile.cards.map(getCardId)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="pile-content">
-                  {pile.cards.map((card) => (
-                    <SortableCard
-                      key={getCardId(card)}
-                      id={getCardId(card)}
-                      card={card}
-                    />
-                  ))}
-                  {pile.cards.length === 0 && (
-                    <div className="empty-pile">Drop cards here</div>
-                  )}
-                </div>
-              </SortableContext>
+              <DroppablePile
+                pileId={pile.id}
+                cards={pile.cards}
+                getCardId={getCardId}
+              />
             </div>
           ))}
         </div>
