@@ -1,0 +1,111 @@
+.card-piles-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.card-piles-container h2 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #1a1a1a;
+}
+
+.instruction-text {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.piles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.pile {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 15px;
+  min-height: 300px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.pile:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pile-header {
+  margin: 0 0 8px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #333;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+.pile-count {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.pile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 200px;
+}
+
+.sortable-card {
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.sortable-card:active {
+  cursor: grabbing;
+}
+
+.sortable-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sortable-card .magic-card {
+  margin: 0;
+  max-width: 100%;
+}
+
+.empty-pile {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  background: white;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-overlay {
+  cursor: grabbing;
+  opacity: 0.8;
+  transform: rotate(-5deg);
+}
+
+.drag-overlay .magic-card {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .piles-grid {
+    grid-template-columns: 1fr;
+  }
+}

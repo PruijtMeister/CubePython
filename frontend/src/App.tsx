@@ -3,6 +3,7 @@ import './App.css';
 import Tabs from './components/Tabs';
 import CubeTab from './components/CubeTab';
 import CardTab from './components/CardTab';
+import CardPilesTab from './components/CardPilesTab';
 
 function App() {
   const tabs = [
@@ -15,6 +16,11 @@ function App() {
       id: 'card',
       label: 'Card',
       content: <CardTab />
+    },
+    {
+      id: 'piles',
+      label: 'Card Piles',
+      content: <CardPilesTab />
     }
   ];
 
