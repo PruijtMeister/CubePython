@@ -1,10 +1,10 @@
 [project]
-name = "cubepython-backend"
+name = "cubepython"
 version = "0.1.0"
-description = "Backend API for CubePython MTG cube recommender"
-readme = "README.md"
+description = "MTG Cube recommender engine with backend API and data scraping"
 requires-python = ">=3.8"
 dependencies = [
+    # Backend dependencies
     "fastapi==0.115.5",
     "uvicorn[standard]==0.32.1",
     "sqlmodel==0.0.22",
@@ -14,8 +14,9 @@ dependencies = [
     "httpx==0.28.1",
     "pytest==8.3.4",
     "pytest-asyncio==0.24.0",
+    # Scripts dependencies
+    "beautifulsoup4>=4.12.0",
+    "requests>=2.31.0",
+    "selenium>=4.15.0",
+    "python-dotenv>=1.0.0",
 ]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
