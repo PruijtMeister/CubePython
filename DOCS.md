@@ -2,14 +2,19 @@
 
 ## Development Environment
 
-This project uses Python virtual environments to isolate dependencies for different components:
+This project uses [UV](https://github.com/astral-sh/uv), a fast Python package manager, to manage virtual environments and dependencies for different components:
 
-- **Backend virtual environment** (`backend/venv/`) - Contains FastAPI and related dependencies
-- **Scripts virtual environment** (`scripts/venv/`) - Contains scraping and data processing dependencies
+- **Backend virtual environment** (`backend/.venv/`) - Contains FastAPI and related dependencies
+- **Scripts virtual environment** (`scripts/.venv/`) - Contains scraping and data processing dependencies
+
+**Package management:**
+- Dependencies are managed via `pyproject.toml` files in each component
+- UV provides fast dependency resolution and installation
+- Virtual environments are created using `uv venv` and dependencies installed with `uv sync`
 
 **Setup scripts:**
-- `setup_backend.sh` - Automated setup for backend virtual environment
-- `setup_scripts.sh` - Automated setup for scripts virtual environment
+- `setup_backend.sh` - Automated setup for backend virtual environment using UV
+- `setup_scripts.sh` - Automated setup for scripts virtual environment using UV
 
 Virtual environments are excluded from version control via `.gitignore`.
 
@@ -22,15 +27,13 @@ Contains data collection and processing scripts.
 
 - **`/scripts/scrapers`** - Web scraping scripts for CubeCobra data
 - **`/scripts/data_processing`** - Data transformation and cleaning scripts
-- **`/scripts/venv`** - Virtual environment for scripts (not committed to git)
-- **`/scripts/requirements.txt`** - Python dependencies for scripts
+- **`/scripts/.venv`** - Virtual environment for scripts (not committed to git)
+- **`/scripts/pyproject.toml`** - Python dependencies and project metadata
 
 #### Dependencies
 - **beautifulsoup4** - HTML parsing for web scraping
 - **requests** - HTTP library for API calls
 - **selenium** - Web browser automation for dynamic content
-- **pandas** - Data manipulation and analysis
-- **numpy** - Numerical computing
 - **httpx** - Async HTTP client
 - **python-dotenv** - Environment variable management
 
@@ -43,9 +46,9 @@ FastAPI application serving the recommender engine.
   - **`/backend/app/core`** - Core configuration (database, settings)
   - **`/backend/app/services`** - Business logic and services
 - **`/backend/tests`** - Backend test suite
-- **`/backend/venv`** - Virtual environment for backend (not committed to git)
+- **`/backend/.venv`** - Virtual environment for backend (not committed to git)
 - **`/backend/run.py`** - Development server script
-- **`/backend/requirements.txt`** - Python dependencies
+- **`/backend/pyproject.toml`** - Python dependencies and project metadata
 
 #### Technology Stack
 - **FastAPI** - Modern async web framework
