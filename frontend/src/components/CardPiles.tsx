@@ -132,25 +132,26 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
 
   // Initialize piles based on mana cost
   useEffect(() => {
-    // Find the maximum mana cost
-    let maxManaCost = 0;
+    // Create map to organize cards by mana cost
     const pileMap = new Map<number, CardData[]>();
 
     cards.forEach((card) => {
       const manaCost = getManaCostValue(card.manaCost);
-      maxManaCost = Math.max(maxManaCost, manaCost);
-      if (!pileMap.has(manaCost)) {
-        pileMap.set(manaCost, []);
+      // Cards with mana cost 7+ go into pile 7
+      const pileCost = manaCost >= 7 ? 7 : manaCost;
+
+      if (!pileMap.has(pileCost)) {
+        pileMap.set(pileCost, []);
       }
-      pileMap.get(manaCost)!.push(card);
+      pileMap.get(pileCost)!.push(card);
     });
 
-    // Create piles for all mana costs from 0 to max, even if empty
+    // Always create exactly 8 piles (0-6 and 7+)
     const sortedPiles: Pile[] = [];
-    for (let cost = 0; cost <= maxManaCost; cost++) {
+    for (let cost = 0; cost <= 7; cost++) {
       sortedPiles.push({
         id: `pile-${cost}`,
-        label: cost === 0 ? '0 Mana' : `${cost} Mana`,
+        label: cost === 0 ? '0 Mana' : cost === 7 ? '7+ Mana' : `${cost} Mana`,
         cards: pileMap.get(cost) || [],
       });
     }
