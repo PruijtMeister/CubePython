@@ -1,212 +1,121 @@
 """
 Cube database service for managing CubeCobra cube data.
 
-This module provides a CubeDatabase class that automatically downloads and caches
-cube data from CubeCobra when requested by cube ID.
+This module provides a CubeDatabase class that loads cube data from the S3 dump
+and provides fast lookups by cube ID.
 """
 
-import json
+import sys
 from pathlib import Path
 from typing import Any
 
-from app.models.cube import CubeModel
+# Add scripts directory to path to import load_cube_data
+scripts_dir = Path(__file__).parent.parent.parent.parent / "scripts"
+sys.path.insert(0, str(scripts_dir))
+
+from scripts.load_cube_data import load_cube_data
 
 
 class CubeDatabase:
     """
-    Manages CubeCobra cube data with local caching.
+    Manages CubeCobra cube data loaded from S3 dump.
 
-    When a cube is requested by ID, this class checks if the cube JSON file exists
-    in the local data folder. If not, it fetches the cube data from CubeCobra
-    and caches it locally for future use.
+    This class loads the complete cube database from the S3 data dump
+    (managed by load_cube_data.py) and provides fast in-memory lookups.
 
-    Each cube is stored as a separate JSON file named by its cube ID
-    (e.g., `1fdv1.json` for cube ID "1fdv1").
+    The data is automatically synced with S3 on initialization, downloading
+    updates if the S3 file is newer than the local cache.
 
     Attributes:
-        data_dir: Path to the directory where cube data is stored
-        cubes: Dictionary mapping cube IDs to their data
+        cube_data: The full cube dataset loaded from S3
+        cube_index: Dictionary mapping cube IDs to their data for fast lookup
 
     Example:
         ```python
-        # Instantiate the database
+        # Instantiate the database (loads from S3 if needed)
         db = CubeDatabase()
 
-        # Get a cube by ID (will download if needed)
-        cube_data = await db.get_cube("1fdv1")
+        # Get a cube by ID
+        cube_data = db.get_cube("1fdv1")
 
         # Access cube information
         print(cube_data["name"])
-        print(cube_data["card_count"])
+        print(cube_data.get("card_count"))
         ```
     """
 
-    def __init__(self, data_dir: Path | None = None):
+    def __init__(self):
         """
         Initialize the CubeDatabase.
 
-        Args:
-            data_dir: Optional custom path to the data directory.
-                     Defaults to backend/data/cubes.
+        Loads the cube data from local cache or S3, checking for updates.
         """
-        if data_dir is None:
-            # Default to backend/data/cubes relative to project root
-            project_root = Path(__file__).parent.parent.parent.parent
-            self.data_dir = project_root / "backend" / "data" / "cubes"
-        else:
-            self.data_dir = data_dir
+        print("Loading cube data from S3/cache...")
+        self.cube_data = load_cube_data()
 
-        # Create data directory if it doesn't exist
-        self.data_dir.mkdir(parents=True, exist_ok=True)
+        # Build index for fast lookups
+        print("Building cube index...")
+        self.cube_index: dict[str, dict[str, Any]] = {}
 
-        # In-memory cache of loaded cubes
-        self.cubes: dict[str, dict[str, Any]] = {}
+        if isinstance(self.cube_data, list):
+            for cube in self.cube_data:
+                cube_id = cube.get('shortId') or cube.get('shortID')
+                if cube_id:
+                    self.cube_index[cube_id] = cube
+        elif isinstance(self.cube_data, dict):
+            self.cube_index = self.cube_data
 
-    async def get_cube(self, cube_id: str) -> dict[str, Any]:
+        print(f"CubeDatabase ready with {len(self.cube_index)} cubes")
+
+    def get_cube(self, cube_id: str) -> dict[str, Any] | None:
         """
         Get a cube by its CubeCobra ID.
-
-        If the cube is already in memory, return it immediately.
-        If the cube exists locally as a JSON file, load it.
-        If the cube doesn't exist locally, fetch it from CubeCobra and cache it.
 
         Args:
             cube_id: The CubeCobra cube ID (e.g., "1fdv1")
 
         Returns:
-            Dictionary containing the cube data.
-
-        Raises:
-            FileNotFoundError: If the cube cannot be found or fetched.
-            json.JSONDecodeError: If the cube JSON is invalid.
+            Dictionary containing the cube data, or None if not found.
         """
-        # Check in-memory cache first
-        if cube_id in self.cubes:
-            print(f"Cube {cube_id} found in memory cache")
-            return self.cubes[cube_id]
+        return self.cube_index.get(cube_id)
 
-        # Check if cube exists locally
-        cube_path = self._get_cube_path(cube_id)
-        if cube_path.exists():
-            print(f"Cube {cube_id} found locally at {cube_path}")
-            cube_data = self._load_cube_from_file(cube_path)
-            self.cubes[cube_id] = cube_data
-            return cube_data
-
-        # Cube not found locally, fetch it
-        print(f"Cube {cube_id} not found locally. Fetching from CubeCobra...")
-        cube_data = await self._fetch_and_store_cube(cube_id)
-        self.cubes[cube_id] = cube_data
-        return cube_data
-
-    def _get_cube_path(self, cube_id: str) -> Path:
+    def get_all_cube_ids(self) -> list[str]:
         """
-        Get the file path for a cube's JSON file.
-
-        Args:
-            cube_id: The cube ID
+        Get a list of all cube IDs in the database.
 
         Returns:
-            Path to the cube's JSON file
+            List of all cube IDs
         """
-        return self.data_dir / f"{cube_id}.json"
+        return list(self.cube_index.keys())
 
-    def _load_cube_from_file(self, cube_path: Path) -> dict[str, Any]:
+    def search_cubes(self, query: str, limit: int = 10) -> list[dict[str, Any]]:
         """
-        Load a cube from a JSON file.
+        Search for cubes by name.
 
         Args:
-            cube_path: Path to the cube JSON file
+            query: Search query string
+            limit: Maximum number of results to return
 
         Returns:
-            Dictionary containing the cube data
-
-        Raises:
-            json.JSONDecodeError: If the file is not valid JSON
+            List of cubes matching the query
         """
-        print(f"Loading cube from {cube_path}...")
-        with cube_path.open("r", encoding="utf-8") as f:
-            return json.load(f)
+        query_lower = query.lower()
+        results = []
 
-    async def _fetch_and_store_cube(self, cube_id: str) -> dict[str, Any]:
+        for cube in self.cube_index.values():
+            name = cube.get('name', '')
+            if query_lower in name.lower():
+                results.append(cube)
+                if len(results) >= limit:
+                    break
+
+        return results
+
+    def get_cube_count(self) -> int:
         """
-        Fetch a cube from CubeCobra and store it locally.
-
-        This is a placeholder that will call the actual fetch_cube function
-        once it's implemented. For now, it calls the placeholder.
-
-        Args:
-            cube_id: The cube ID to fetch
+        Get the total number of cubes in the database.
 
         Returns:
-            Dictionary containing the cube data
-
-        Raises:
-            NotImplementedError: Until fetch_cube is properly implemented
+            Number of cubes
         """
-        # Fetch the cube data
-        cube_data = await fetch_cube(cube_id)
-
-        # Store it locally
-        cube_path = self._get_cube_path(cube_id)
-        self._store_cube(cube_path, cube_data)
-
-        print(f"Successfully fetched and stored cube {cube_id}")
-        return cube_data
-
-    def _store_cube(self, cube_path: Path, cube_data: dict[str, Any]) -> None:
-        """
-        Store cube data to a JSON file.
-
-        Args:
-            cube_path: Path where the cube should be stored
-            cube_data: The cube data to store
-        """
-        with cube_path.open("w", encoding="utf-8") as f:
-            json.dump(cube_data, f, indent=2, ensure_ascii=False)
-        print(f"Stored cube at {cube_path}")
-
-    def get_cached_cube_ids(self) -> list[str]:
-        """
-        Get a list of all locally cached cube IDs.
-
-        Returns:
-            List of cube IDs that have been cached locally
-        """
-        cube_files = list(self.data_dir.glob("*.json"))
-        return [f.stem for f in cube_files]
-
-    def is_cube_cached(self, cube_id: str) -> bool:
-        """
-        Check if a cube is cached locally.
-
-        Args:
-            cube_id: The cube ID to check
-
-        Returns:
-            True if the cube exists locally, False otherwise
-        """
-        return self._get_cube_path(cube_id).exists()
-
-
-async def fetch_cube(cube_id: str) -> dict[str, Any]:
-    """
-    Placeholder function to fetch a cube from CubeCobra.
-
-    This function will be implemented later to actually fetch cube data
-    from CubeCobra's API or by scraping their website.
-
-    Args:
-        cube_id: The CubeCobra cube ID to fetch
-
-    Returns:
-        Dictionary containing the cube data
-
-    Raises:
-        NotImplementedError: This is a placeholder function
-    """
-    raise NotImplementedError(
-        f"fetch_cube is not yet implemented. "
-        f"Cannot fetch cube '{cube_id}' from CubeCobra. "
-        f"This function should be implemented to download cube data from CubeCobra."
-    )
+        return len(self.cube_index)
