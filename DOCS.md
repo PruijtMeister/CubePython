@@ -230,7 +230,7 @@ curl "http://localhost:8000/api/v1/cards/search/lightning?limit=5"
 ```
 
 Response format:
-- Returns card data as JSON directly from the Scryfall Oracle Cards dataset
+- Returns `CardModel` (Pydantic model) as JSON with card data from the Scryfall Oracle Cards dataset
 - Each card contains comprehensive information including name, mana cost, type, oracle text, colors, legalities, and more
 - Error responses follow standard HTTP status codes (404 for not found, etc.)
 
@@ -255,7 +255,7 @@ curl "http://localhost:8000/api/v1/cubes/1fdv1"
 
 Response format:
 - `GET /api/v1/cubes/` returns an array of cube ID strings
-- `GET /api/v1/cubes/{cube_id}` returns full cube data as JSON including:
+- `GET /api/v1/cubes/{cube_id}` returns a `CubeModel` (Pydantic model) as JSON including:
   - `id`: CubeCobra unique cube ID
   - `name`: Cube name
   - `owner`: Cube owner username
