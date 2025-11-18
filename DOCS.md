@@ -187,6 +187,43 @@ Response format:
 - Each card contains comprehensive information including name, mana cost, type, oracle text, colors, legalities, and more
 - Error responses follow standard HTTP status codes (404 for not found, etc.)
 
+**Cubes API** (`/backend/app/api/cubes.py`)
+- Provides endpoints for accessing cube data from the CubeDatabase
+- All routes are prefixed with `/api/v1/cubes`
+- CubeDatabase is accessed via `request.app.state.cube_db`
+- CubeDatabase is automatically instantiated on application startup
+
+Available endpoints:
+- `GET /api/v1/cubes/` - Get a list of all cached cube identifiers
+- `GET /api/v1/cubes/{cube_id}` - Get a cube by its CubeCobra identifier
+
+Example usage:
+```bash
+# Get all cached cube identifiers
+curl "http://localhost:8000/api/v1/cubes/"
+
+# Get cube by ID
+curl "http://localhost:8000/api/v1/cubes/1fdv1"
+```
+
+Response format:
+- `GET /api/v1/cubes/` returns an array of cube ID strings
+- `GET /api/v1/cubes/{cube_id}` returns full cube data as JSON including:
+  - `id`: CubeCobra unique cube ID
+  - `name`: Cube name
+  - `owner`: Cube owner username
+  - `description`: Cube description
+  - `card_count`: Number of cards in the cube
+  - `cards`: List of cards in the cube
+  - `tags`: Cube tags
+  - And additional metadata fields
+- Returns 404 if cube is not cached and cannot be fetched
+- Returns 500 if there's an error loading or fetching the cube
+
+Notes:
+- If a cube is not in the local cache and the CubeCobra fetch implementation is not available, the endpoint will return a 404 with a helpful error message
+- Cubes are cached locally in `backend/data/cubes/{cube_id}.json` for fast subsequent access
+
 ### `/frontend`
 React with TypeScript UI for inspecting data and recommendations.
 
