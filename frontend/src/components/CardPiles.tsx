@@ -64,7 +64,7 @@ const SortableCard: React.FC<SortableCardProps> = ({ card, id, index }) => {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1000 : 100 - index,
+    zIndex: isDragging ? 1000 : index,
   };
 
   return (
@@ -131,23 +131,28 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
 
   // Initialize piles based on mana cost
   useEffect(() => {
+    // Find the maximum mana cost
+    let maxManaCost = 0;
     const pileMap = new Map<number, CardData[]>();
 
     cards.forEach((card) => {
       const manaCost = getManaCostValue(card.manaCost);
+      maxManaCost = Math.max(maxManaCost, manaCost);
       if (!pileMap.has(manaCost)) {
         pileMap.set(manaCost, []);
       }
       pileMap.get(manaCost)!.push(card);
     });
 
-    const sortedPiles = Array.from(pileMap.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([cost, cards]) => ({
+    // Create piles for all mana costs from 0 to max, even if empty
+    const sortedPiles: Pile[] = [];
+    for (let cost = 0; cost <= maxManaCost; cost++) {
+      sortedPiles.push({
         id: `pile-${cost}`,
         label: cost === 0 ? '0 Mana' : `${cost} Mana`,
-        cards,
-      }));
+        cards: pileMap.get(cost) || [],
+      });
+    }
 
     setPiles(sortedPiles);
   }, [cards]);
