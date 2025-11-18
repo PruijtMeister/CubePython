@@ -1,0 +1,139 @@
+.card-piles-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.card-piles-container h2 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #1a1a1a;
+}
+
+.instruction-text {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.piles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.pile {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 15px;
+  min-height: 300px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.pile:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pile-header {
+  margin: 0 0 8px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #333;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+.pile-count {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.pile-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+  height: 600px;
+  position: relative;
+  padding: 10px;
+}
+
+.sortable-card {
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s, margin-top 0.2s;
+  position: relative;
+  margin-top: -130px;
+}
+
+.sortable-card:first-child {
+  margin-top: 0;
+}
+
+.sortable-card:active {
+  cursor: grabbing;
+}
+
+.sortable-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 200 !important;
+}
+
+.sortable-card .magic-card {
+  margin: 0;
+  max-width: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.sortable-card .card-image {
+  margin: 0;
+  border-radius: 8px;
+}
+
+.sortable-card .card-image img {
+  border-radius: 8px;
+}
+
+.empty-pile {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 30px 15px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  background: white;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.pile-over {
+  background: rgba(100, 150, 255, 0.05);
+  border-radius: 8px;
+}
+
+.drag-overlay {
+  cursor: grabbing;
+  opacity: 0.9;
+  transform: rotate(-3deg);
+}
+
+.drag-overlay .magic-card {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  max-width: 180px;
+}
+
+@media (max-width: 768px) {
+  .piles-grid {
+    grid-template-columns: 1fr;
+  }
+}

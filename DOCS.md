@@ -289,3 +289,43 @@ Built with Create React App (TypeScript template) for rapid development and buil
 - **TypeScript** - Type-safe JavaScript
 - **Create React App** - Build tooling and development server
 - **React Scripts** - Build and development scripts
+- **@dnd-kit** - Drag and drop functionality for interactive UIs
+
+#### Components
+
+**Card** (`/frontend/src/components/Card.tsx`)
+- Displays individual Magic: The Gathering cards
+- Accepts `CardData` interface with card properties (name, manaCost, type, text, power, toughness, imageUrl, set, rarity)
+- Currently renders card images when available
+
+**CardPiles** (`/frontend/src/components/CardPiles.tsx`)
+- Interactive component for organizing cards into piles
+- Automatically groups cards by mana cost on initialization
+- Features drag-and-drop functionality for reorganizing cards between piles
+- Uses @dnd-kit library for smooth drag interactions
+- Extracts mana cost values from MTG mana symbols (e.g., "{2}{U}{U}" = 4 mana)
+- Displays pile headers with mana cost labels and card counts
+- Supports empty piles as drop zones for better UX
+
+Usage:
+```tsx
+import CardPiles from './components/CardPiles';
+import { CardData } from './components/Card';
+
+const cards: CardData[] = [
+  { name: "Lightning Bolt", manaCost: "{R}", ... },
+  { name: "Counterspell", manaCost: "{U}{U}", ... },
+];
+
+<CardPiles cards={cards} />
+```
+
+**CardPilesTab** (`/frontend/src/components/CardPilesTab.tsx`)
+- Test component demonstrating CardPiles functionality
+- Contains 15 example Magic cards with varying mana costs (0-6 mana)
+- Includes diverse card types: creatures, instants, sorceries, planeswalkers, artifacts
+- Uses real Scryfall image URLs for card visualization
+
+**Tabs** (`/frontend/src/components/Tabs.tsx`)
+- Tab navigation component for organizing different views
+- Currently includes: Cube, Card, and Card Piles tabs

@@ -1,24 +1,35 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import Tabs from './components/Tabs';
+import CubeTab from './components/CubeTab';
+import CardTab from './components/CardTab';
+import CardPilesTab from './components/CardPilesTab';
 
 function App() {
+  const tabs = [
+    {
+      id: 'cube',
+      label: 'Cube',
+      content: <CubeTab />
+    },
+    {
+      id: 'card',
+      label: 'Card',
+      content: <CardTab />
+    },
+    {
+      id: 'piles',
+      label: 'Card Piles',
+      content: <CardPilesTab />
+    }
+  ];
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>CubePython Tools</h1>
       </header>
+      <Tabs tabs={tabs} />
     </div>
   );
 }

@@ -50,3 +50,7 @@ output_*.json
 
 # UV lock file
 uv.lock
+
+# Development logs
+backend.log
+frontend.log

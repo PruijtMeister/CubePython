@@ -1,0 +1,83 @@
+.magic-card {
+  max-width: 350px;
+  margin: 20px auto;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #333;
+}
+
+.card-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #1a1a1a;
+}
+
+.mana-cost {
+  font-weight: bold;
+  color: #666;
+  font-size: 16px;
+}
+
+.card-image {
+  width: 100%;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.card-details {
+  font-size: 14px;
+  color: #333;
+}
+
+.card-type {
+  margin-bottom: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #999;
+}
+
+.card-text {
+  margin: 12px 0;
+  padding: 8px;
+  background: #fff;
+  border-radius: 4px;
+  min-height: 60px;
+}
+
+.card-text p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.card-stats {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #999;
+  font-size: 12px;
+  color: #666;
+}
+
+.card-set,
+.card-rarity {
+  text-transform: uppercase;
+}
