@@ -59,6 +59,7 @@ FastAPI application serving the recommender engine.
 - **CORS middleware** - Pre-configured for frontend integration
 - **Database migrations** - Automatic table creation via SQLModel on startup
 - **Health checks** - `/api/v1/health` endpoint for monitoring
+- **CardDatabase initialization** - Automatically instantiated on application startup and stored in `app.state.card_db`
 
 #### Data Services
 
@@ -156,6 +157,35 @@ recommendations = recommender.recommend(target_cube, n_recommendations=5)
 recommender.save("models/my_recommender.pkl")
 loaded_recommender = MyRecommender.load("models/my_recommender.pkl")
 ```
+
+#### API Routes
+
+**Cards API** (`/backend/app/api/cards.py`)
+- Provides endpoints for accessing card data from the CardDatabase
+- All routes are prefixed with `/api/v1/cards`
+- CardDatabase is accessed via `request.app.state.card_db`
+
+Available endpoints:
+- `GET /api/v1/cards/{card_id}` - Get a card by its Scryfall ID
+- `GET /api/v1/cards/name/{card_name}` - Get a card by its exact name
+- `GET /api/v1/cards/search/{query}?limit=10` - Search for cards by name (case-insensitive partial match)
+
+Example usage:
+```bash
+# Get card by ID
+curl "http://localhost:8000/api/v1/cards/77c6fa74-5543-42ac-9ead-0e890b188e99"
+
+# Get card by exact name
+curl "http://localhost:8000/api/v1/cards/name/Lightning%20Bolt"
+
+# Search for cards
+curl "http://localhost:8000/api/v1/cards/search/lightning?limit=5"
+```
+
+Response format:
+- Returns card data as JSON directly from the Scryfall Oracle Cards dataset
+- Each card contains comprehensive information including name, mana cost, type, oracle text, colors, legalities, and more
+- Error responses follow standard HTTP status codes (404 for not found, etc.)
 
 ### `/frontend`
 React with TypeScript UI for inspecting data and recommendations.
