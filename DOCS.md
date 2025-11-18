@@ -112,6 +112,51 @@ is_cached = db.is_cube_cached("1fdv1")
 cached_ids = db.get_cached_cube_ids()
 ```
 
+**Recommender** (`/backend/app/services/recommender/base.py`)
+- Abstract base class for cube recommendation systems
+- Defines standard interface for all recommendation implementations
+- Provides fit/recommend pattern for training and inference
+- Includes save/load methods for model persistence using pickle
+- Subclasses must implement `fit()` and `recommend()` methods
+
+Key methods:
+- `fit(cubes: List[CubeModel])` - Train the recommender on cube data
+- `recommend(cube: CubeModel, n_recommendations: int, filters: Optional[Dict])` - Generate card recommendations
+- `save(filepath: Path | str)` - Persist fitted model to disk
+- `load(filepath: Path | str)` - Load fitted model from disk
+
+Usage:
+```python
+from backend.app.services.recommender import Recommender
+from backend.app.models.cube import CubeModel
+
+# Subclass must implement abstract methods
+class MyRecommender(Recommender):
+    def fit(self, cubes: List[CubeModel]) -> "MyRecommender":
+        # Train on cube data
+        self.model_data['num_cubes'] = len(cubes)
+        self.is_fitted = True
+        return self
+
+    def recommend(self, cube: CubeModel, n_recommendations: int = 10,
+                  filters: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        if not self.is_fitted:
+            raise RuntimeError("Model not fitted")
+        # Generate recommendations
+        return [{'card': {...}, 'score': 0.95, 'reason': '...'}]
+
+# Train and use recommender
+recommender = MyRecommender()
+recommender.fit(training_cubes)
+
+# Make recommendations
+recommendations = recommender.recommend(target_cube, n_recommendations=5)
+
+# Save and load
+recommender.save("models/my_recommender.pkl")
+loaded_recommender = MyRecommender.load("models/my_recommender.pkl")
+```
+
 ### `/frontend`
 React with TypeScript UI for inspecting data and recommendations.
 
