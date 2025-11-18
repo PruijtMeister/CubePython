@@ -40,3 +40,10 @@ wheels/
 # OS
 .DS_Store
 Thumbs.db
+
+# Script outputs
+output_*.html
+output_*.json
+
+# UV lock file
+uv.lock

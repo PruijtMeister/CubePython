@@ -1,7 +1,7 @@
 #!/bin/bash
-# Setup script for backend virtual environment using UV
+# Setup script for CubePython virtual environment using UV
 
-echo "Setting up backend virtual environment with UV..."
+echo "Setting up CubePython virtual environment with UV..."
 
 # Check if UV is installed
 if ! command -v uv &> /dev/null; then
@@ -10,8 +10,6 @@ if ! command -v uv &> /dev/null; then
     echo "Please restart your shell or run: source $HOME/.cargo/env"
     exit 1
 fi
-
-cd backend
 
 # Check if venv exists
 if [ -d ".venv" ]; then
@@ -24,5 +22,5 @@ else
 fi
 
 echo ""
-echo "Backend virtual environment setup complete!"
-echo "To activate: cd backend && source .venv/bin/activate"
+echo "Virtual environment setup complete!"
+echo "To activate: source .venv/bin/activate"
