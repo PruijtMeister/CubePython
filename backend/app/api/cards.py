@@ -3,13 +3,14 @@ API routes for card-related endpoints.
 """
 
 from fastapi import APIRouter, HTTPException, Request
-from typing import Any
+
+from app.models.card import CardModel
 
 router = APIRouter()
 
 
 @router.get("/{card_id}")
-async def get_card_by_id(card_id: str, request: Request) -> dict[str, Any]:
+async def get_card_by_id(card_id: str, request: Request) -> CardModel:
     """
     Get a card by its Scryfall ID.
 
@@ -17,7 +18,7 @@ async def get_card_by_id(card_id: str, request: Request) -> dict[str, Any]:
         card_id: The Scryfall card ID to look up
 
     Returns:
-        Card data dictionary
+        Card data model
 
     Raises:
         HTTPException: 404 if card not found
@@ -28,7 +29,7 @@ async def get_card_by_id(card_id: str, request: Request) -> dict[str, Any]:
     # Search for the card by ID
     for card in card_db.cards:
         if card.get("id") == card_id:
-            return card
+            return CardModel.model_validate(card)
 
     raise HTTPException(
         status_code=404,
@@ -37,7 +38,7 @@ async def get_card_by_id(card_id: str, request: Request) -> dict[str, Any]:
 
 
 @router.get("/name/{card_name}")
-async def get_card_by_name(card_name: str, request: Request) -> dict[str, Any]:
+async def get_card_by_name(card_name: str, request: Request) -> CardModel:
     """
     Get a card by its exact name.
 
@@ -45,7 +46,7 @@ async def get_card_by_name(card_name: str, request: Request) -> dict[str, Any]:
         card_name: The exact card name to look up
 
     Returns:
-        Card data dictionary
+        Card data model
 
     Raises:
         HTTPException: 404 if card not found
@@ -59,7 +60,7 @@ async def get_card_by_name(card_name: str, request: Request) -> dict[str, Any]:
             detail=f"Card with name '{card_name}' not found"
         )
 
-    return card
+    return CardModel.model_validate(card)
 
 
 @router.get("/search/{query}")
@@ -67,7 +68,7 @@ async def search_cards(
     query: str,
     request: Request,
     limit: int = 10
-) -> list[dict[str, Any]]:
+) -> list[CardModel]:
     """
     Search for cards by name (case-insensitive partial match).
 
@@ -76,9 +77,9 @@ async def search_cards(
         limit: Maximum number of results to return (default: 10)
 
     Returns:
-        List of matching card data dictionaries
+        List of matching card data models
     """
     card_db = request.app.state.card_db
     results = card_db.search_cards(query, limit=limit)
 
-    return results
+    return [CardModel.model_validate(card) for card in results]

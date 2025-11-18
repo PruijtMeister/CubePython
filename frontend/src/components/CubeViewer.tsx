@@ -18,9 +18,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Card, { CardData } from './Card';
-import './CardPiles.css';
+import './CubeViewer.css';
 
-interface CardPilesProps {
+interface CubeViewerProps {
   cards: CardData[];
 }
 
@@ -118,7 +118,7 @@ const DroppablePile: React.FC<DroppablePileProps> = ({ pileId, cards, getCardId 
   );
 };
 
-const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
+const CubeViewer: React.FC<CubeViewerProps> = ({ cards }) => {
   const [piles, setPiles] = useState<Pile[]>([]);
   const [activeCard, setActiveCard] = useState<CardData | null>(null);
 
@@ -132,25 +132,26 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
 
   // Initialize piles based on mana cost
   useEffect(() => {
-    // Find the maximum mana cost
-    let maxManaCost = 0;
+    // Create map to organize cards by mana cost
     const pileMap = new Map<number, CardData[]>();
 
     cards.forEach((card) => {
       const manaCost = getManaCostValue(card.manaCost);
-      maxManaCost = Math.max(maxManaCost, manaCost);
-      if (!pileMap.has(manaCost)) {
-        pileMap.set(manaCost, []);
+      // Cards with mana cost 7+ go into pile 7
+      const pileCost = manaCost >= 7 ? 7 : manaCost;
+
+      if (!pileMap.has(pileCost)) {
+        pileMap.set(pileCost, []);
       }
-      pileMap.get(manaCost)!.push(card);
+      pileMap.get(pileCost)!.push(card);
     });
 
-    // Create piles for all mana costs from 0 to max, even if empty
+    // Always create exactly 8 piles (0-6 and 7+)
     const sortedPiles: Pile[] = [];
-    for (let cost = 0; cost <= maxManaCost; cost++) {
+    for (let cost = 0; cost <= 7; cost++) {
       sortedPiles.push({
         id: `pile-${cost}`,
-        label: cost === 0 ? '0 Mana' : `${cost} Mana`,
+        label: cost === 0 ? '0 Mana' : cost === 7 ? '7+ Mana' : `${cost} Mana`,
         cards: pileMap.get(cost) || [],
       });
     }
@@ -256,6 +257,68 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
     return `${card.name}-${card.manaCost || 'no-cost'}`;
   };
 
+  // Placeholder recommendations data with actual card objects
+  const placeholderRecommendations: CardData[] = [
+    {
+      name: 'Swords to Plowshares',
+      manaCost: '{W}',
+      type: 'Instant',
+      text: 'Exile target creature. Its controller gains life equal to its power.',
+      imageUrl: 'https://cards.scryfall.io/normal/front/8/0/80f46b80-0728-49bf-9d54-801eaa10b9b2.jpg',
+      set: '2X2',
+      rarity: 'Uncommon',
+    },
+    {
+      name: 'Mana Drain',
+      manaCost: '{U}{U}',
+      type: 'Instant',
+      text: 'Counter target spell. At the beginning of your next main phase, add an amount of {C} equal to that spell\'s mana value.',
+      imageUrl: 'https://cards.scryfall.io/normal/front/3/c/3c429c40-2389-41e5-8681-4bb274e25eba.jpg',
+      set: 'IMA',
+      rarity: 'Mythic',
+    },
+    {
+      name: 'Ragavan, Nimble Pilferer',
+      manaCost: '{R}',
+      type: 'Legendary Creature — Monkey Pirate',
+      text: 'Whenever Ragavan, Nimble Pilferer deals combat damage to a player, create a Treasure token and exile the top card of that player\'s library. Until end of turn, you may cast that card.',
+      power: '2',
+      toughness: '1',
+      imageUrl: 'https://cards.scryfall.io/normal/front/a/9/a9738cda-adb1-47fb-9f4c-ecd930228c4d.jpg',
+      set: 'MH2',
+      rarity: 'Mythic',
+    },
+    {
+      name: 'Oko, Thief of Crowns',
+      manaCost: '{1}{G}{U}',
+      type: 'Legendary Planeswalker — Oko',
+      text: '+2: Create a Food token.\n+1: Target artifact or creature loses all abilities and becomes a green Elk creature with base power and toughness 3/3.\n-5: Exchange control of target artifact or creature you control and target creature an opponent controls with power 3 or less.',
+      imageUrl: 'https://cards.scryfall.io/normal/front/3/4/3462a3d0-5552-49fa-9eb7-100960c55891.jpg',
+      set: 'ELD',
+      rarity: 'Mythic',
+    },
+    {
+      name: 'Sheoldred, the Apocalypse',
+      manaCost: '{2}{B}{B}',
+      type: 'Legendary Creature — Phyrexian Praetor',
+      text: 'Deathtouch\nWhenever you draw a card, you gain 2 life.\nWhenever an opponent draws a card, they lose 2 life.',
+      power: '4',
+      toughness: '5',
+      imageUrl: 'https://cards.scryfall.io/normal/front/d/6/d67be074-cdd4-41d9-ac89-0a0456c4e4b2.jpg',
+      set: 'DMU',
+      rarity: 'Mythic',
+    },
+    {
+      name: 'The One Ring',
+      manaCost: '{4}',
+      type: 'Legendary Artifact',
+      text: 'When The One Ring enters the battlefield, if you cast it, you gain protection from everything until your next turn.\nAt the beginning of your upkeep, you lose 1 life for each burden counter on The One Ring.\n{T}: Put a burden counter on The One Ring, then draw a card for each burden counter on The One Ring.',
+      imageUrl: 'https://cards.scryfall.io/normal/front/d/5/d5806e68-1054-458e-866d-1f2470f682b2.jpg',
+      set: 'LTR',
+      rarity: 'Mythic',
+    },
+  ];
+
   return (
     <DndContext
       sensors={sensors}
@@ -263,21 +326,34 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="card-piles-container">
-        <h2>Card Piles</h2>
-        <p className="instruction-text">Drag and drop cards to reorganize them between piles</p>
-        <div className="piles-grid">
-          {piles.map((pile) => (
-            <div key={pile.id} className="pile" data-pile-id={pile.id}>
-              <h3 className="pile-header">{pile.label}</h3>
-              <div className="pile-count">{pile.cards.length} cards</div>
-              <DroppablePile
-                pileId={pile.id}
-                cards={pile.cards}
-                getCardId={getCardId}
-              />
+      <div className="cube-viewer-container">
+        <h2>Cube Viewer</h2>
+        <div className="cube-viewer-main">
+          <div className="cube-viewer-piles">
+            <div className="piles-grid">
+              {piles.map((pile) => (
+                <div key={pile.id} className="pile" data-pile-id={pile.id}>
+                  <h3 className="pile-header">{pile.label}</h3>
+                  <div className="pile-count">{pile.cards.length} cards</div>
+                  <DroppablePile
+                    pileId={pile.id}
+                    cards={pile.cards}
+                    getCardId={getCardId}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+          <div className="cube-viewer-recommendations">
+            <h3>Recommendations</h3>
+            <div className="recommendations-grid">
+              {placeholderRecommendations.map((card, index) => (
+                <div key={index} className="recommendation-card">
+                  <Card card={card} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       <DragOverlay>
@@ -291,4 +367,4 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
   );
 };
 
-export default CardPiles;
+export default CubeViewer;

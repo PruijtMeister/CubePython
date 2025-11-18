@@ -230,7 +230,7 @@ curl "http://localhost:8000/api/v1/cards/search/lightning?limit=5"
 ```
 
 Response format:
-- Returns card data as JSON directly from the Scryfall Oracle Cards dataset
+- Returns `CardModel` (Pydantic model) as JSON with card data from the Scryfall Oracle Cards dataset
 - Each card contains comprehensive information including name, mana cost, type, oracle text, colors, legalities, and more
 - Error responses follow standard HTTP status codes (404 for not found, etc.)
 
@@ -255,7 +255,7 @@ curl "http://localhost:8000/api/v1/cubes/1fdv1"
 
 Response format:
 - `GET /api/v1/cubes/` returns an array of cube ID strings
-- `GET /api/v1/cubes/{cube_id}` returns full cube data as JSON including:
+- `GET /api/v1/cubes/{cube_id}` returns a `CubeModel` (Pydantic model) as JSON including:
   - `id`: CubeCobra unique cube ID
   - `name`: Cube name
   - `owner`: Cube owner username
@@ -298,18 +298,24 @@ Built with Create React App (TypeScript template) for rapid development and buil
 - Accepts `CardData` interface with card properties (name, manaCost, type, text, power, toughness, imageUrl, set, rarity)
 - Currently renders card images when available
 
-**CardPiles** (`/frontend/src/components/CardPiles.tsx`)
-- Interactive component for organizing cards into piles
+**CubeViewer** (`/frontend/src/components/CubeViewer.tsx`)
+- Interactive component for viewing and organizing cube cards with recommendations
 - Automatically groups cards by mana cost on initialization
 - Features drag-and-drop functionality for reorganizing cards between piles
 - Uses @dnd-kit library for smooth drag interactions
 - Extracts mana cost values from MTG mana symbols (e.g., "{2}{U}{U}" = 4 mana)
 - Displays pile headers with mana cost labels and card counts
 - Supports empty piles as drop zones for better UX
+- Includes a recommendations panel on the right side with placeholder cards
+- Compact layout with smaller cards and piles for efficient space usage
+
+Layout:
+- Main area: Card piles organized by mana cost (0-7+)
+- Right panel: Recommendations section showing suggested cards for the cube
 
 Usage:
 ```tsx
-import CardPiles from './components/CardPiles';
+import CubeViewer from './components/CubeViewer';
 import { CardData } from './components/Card';
 
 const cards: CardData[] = [
@@ -317,15 +323,15 @@ const cards: CardData[] = [
   { name: "Counterspell", manaCost: "{U}{U}", ... },
 ];
 
-<CardPiles cards={cards} />
+<CubeViewer cards={cards} />
 ```
 
-**CardPilesTab** (`/frontend/src/components/CardPilesTab.tsx`)
-- Test component demonstrating CardPiles functionality
+**CubeViewerTab** (`/frontend/src/components/CubeViewerTab.tsx`)
+- Test component demonstrating CubeViewer functionality
 - Contains 15 example Magic cards with varying mana costs (0-6 mana)
 - Includes diverse card types: creatures, instants, sorceries, planeswalkers, artifacts
 - Uses real Scryfall image URLs for card visualization
 
 **Tabs** (`/frontend/src/components/Tabs.tsx`)
 - Tab navigation component for organizing different views
-- Currently includes: Cube, Card, and Card Piles tabs
+- Currently includes: Cube, Card, and Cube Viewer tabs
