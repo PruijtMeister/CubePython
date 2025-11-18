@@ -18,9 +18,9 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import Card, { CardData } from './Card';
-import './CardPiles.css';
+import './CubeViewer.css';
 
-interface CardPilesProps {
+interface CubeViewerProps {
   cards: CardData[];
 }
 
@@ -118,7 +118,7 @@ const DroppablePile: React.FC<DroppablePileProps> = ({ pileId, cards, getCardId 
   );
 };
 
-const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
+const CubeViewer: React.FC<CubeViewerProps> = ({ cards }) => {
   const [piles, setPiles] = useState<Pile[]>([]);
   const [activeCard, setActiveCard] = useState<CardData | null>(null);
 
@@ -257,6 +257,16 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
     return `${card.name}-${card.manaCost || 'no-cost'}`;
   };
 
+  // Placeholder recommendations data
+  const placeholderRecommendations = [
+    'Recommendation 1',
+    'Recommendation 2',
+    'Recommendation 3',
+    'Recommendation 4',
+    'Recommendation 5',
+    'Recommendation 6',
+  ];
+
   return (
     <DndContext
       sensors={sensors}
@@ -264,21 +274,35 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="card-piles-container">
-        <h2>Card Piles</h2>
+      <div className="cube-viewer-container">
+        <h2>Cube Viewer</h2>
         <p className="instruction-text">Drag and drop cards to reorganize them between piles</p>
-        <div className="piles-grid">
-          {piles.map((pile) => (
-            <div key={pile.id} className="pile" data-pile-id={pile.id}>
-              <h3 className="pile-header">{pile.label}</h3>
-              <div className="pile-count">{pile.cards.length} cards</div>
-              <DroppablePile
-                pileId={pile.id}
-                cards={pile.cards}
-                getCardId={getCardId}
-              />
+        <div className="cube-viewer-main">
+          <div className="cube-viewer-piles">
+            <div className="piles-grid">
+              {piles.map((pile) => (
+                <div key={pile.id} className="pile" data-pile-id={pile.id}>
+                  <h3 className="pile-header">{pile.label}</h3>
+                  <div className="pile-count">{pile.cards.length} cards</div>
+                  <DroppablePile
+                    pileId={pile.id}
+                    cards={pile.cards}
+                    getCardId={getCardId}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+          <div className="cube-viewer-recommendations">
+            <h3>Recommendations</h3>
+            <div className="recommendations-grid">
+              {placeholderRecommendations.map((rec, index) => (
+                <div key={index} className="recommendation-card">
+                  {rec}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       <DragOverlay>
@@ -292,4 +316,4 @@ const CardPiles: React.FC<CardPilesProps> = ({ cards }) => {
   );
 };
 
-export default CardPiles;
+export default CubeViewer;

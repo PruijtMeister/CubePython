@@ -1,13 +1,63 @@
-.card-piles-container {
+.cube-viewer-container {
   padding: 20px;
   max-width: 1800px;
   margin: 0 auto;
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
 }
 
-.card-piles-container h2 {
+.cube-viewer-container h2 {
   text-align: center;
   margin-bottom: 10px;
   color: #1a1a1a;
+}
+
+.cube-viewer-main {
+  display: flex;
+  gap: 20px;
+}
+
+.cube-viewer-piles {
+  flex: 1;
+}
+
+.cube-viewer-recommendations {
+  width: 300px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cube-viewer-recommendations h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #1a1a1a;
+  font-size: 18px;
+  text-align: center;
+  border-bottom: 2px solid #333;
+  padding-bottom: 8px;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.recommendation-card {
+  background: white;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .instruction-text {
@@ -19,8 +69,8 @@
 
 .piles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 195px));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 155px));
+  gap: 10px;
   margin-top: 20px;
 }
 
@@ -28,7 +78,7 @@
   background: #f5f5f5;
   border-radius: 8px;
   padding: 2px;
-  min-height: 300px;
+  min-height: 250px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s;
 }
@@ -38,10 +88,10 @@
 }
 
 .pile-header {
-  margin: 0 0 8px 0;
-  padding-bottom: 8px;
+  margin: 0 0 6px 0;
+  padding-bottom: 6px;
   border-bottom: 2px solid #333;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: bold;
   color: #1a1a1a;
   text-align: center;
@@ -49,24 +99,24 @@
 
 .pile-count {
   text-align: center;
-  font-size: 12px;
+  font-size: 10px;
   color: #666;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .pile-content {
   display: flex;
   flex-direction: column;
-  min-height: 200px;
+  min-height: 150px;
   position: relative;
-  padding: 10px;
+  padding: 8px;
 }
 
 .sortable-card {
   cursor: grab;
   transition: transform 0.2s, box-shadow 0.2s, margin-top 0.2s;
   position: relative;
-  margin-top: -195px;
+  margin-top: -155px;
 }
 
 .sortable-card:first-child {
@@ -85,19 +135,19 @@
 
 .sortable-card .magic-card {
   margin: 0;
-  max-width: 180px;
-  border-radius: 8px;
+  max-width: 140px;
+  border-radius: 6px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .sortable-card .card-image {
   margin: 0;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .sortable-card .card-image img {
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .empty-pile {
@@ -128,7 +178,7 @@
 
 .drag-overlay .magic-card {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-  max-width: 180px;
+  max-width: 140px;
 }
 
 @media (max-width: 768px) {

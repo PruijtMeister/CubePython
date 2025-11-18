@@ -1,8 +1,8 @@
 import React from 'react';
-import CardPiles from './CardPiles';
+import CubeViewer from './CubeViewer';
 import { CardData } from './Card';
 
-const CardPilesTab: React.FC = () => {
+const CubeViewerTab: React.FC = () => {
   // Example cards with various mana costs for testing
   const exampleCards: CardData[] = [
     {
@@ -153,10 +153,10 @@ const CardPilesTab: React.FC = () => {
   ];
 
   return (
-    <div className="card-piles-tab">
-      <CardPiles cards={exampleCards} />
+    <div className="cube-viewer-tab">
+      <CubeViewer cards={exampleCards} />
     </div>
   );
 };
 
-export default CardPilesTab;
+export default CubeViewerTab;
