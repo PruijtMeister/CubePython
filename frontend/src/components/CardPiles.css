@@ -1,6 +1,6 @@
 .card-piles-container {
   padding: 20px;
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
 }
 
@@ -19,15 +19,15 @@
 
 .piles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 195px));
+  gap: 12px;
   margin-top: 20px;
 }
 
 .pile {
   background: #f5f5f5;
   border-radius: 8px;
-  padding: 15px;
+  padding: 2px;
   min-height: 300px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s;
@@ -57,8 +57,7 @@
 .pile-content {
   display: flex;
   flex-direction: column;
-  min-height: 600px;
-  height: 600px;
+  min-height: 200px;
   position: relative;
   padding: 10px;
 }
@@ -67,7 +66,7 @@
   cursor: grab;
   transition: transform 0.2s, box-shadow 0.2s, margin-top 0.2s;
   position: relative;
-  margin-top: -130px;
+  margin-top: -195px;
 }
 
 .sortable-card:first-child {
