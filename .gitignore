@@ -37,6 +37,9 @@ wheels/
 *.sqlite
 *.sqlite3
 
+# Data files
+backend/data/
+
 # OS
 .DS_Store
 Thumbs.db

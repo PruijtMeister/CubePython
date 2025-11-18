@@ -60,6 +60,29 @@ FastAPI application serving the recommender engine.
 - **Database migrations** - Automatic table creation via SQLModel on startup
 - **Health checks** - `/api/v1/health` endpoint for monitoring
 
+#### Data Services
+
+**CardDatabase** (`/backend/app/services/card_database.py`)
+- Manages Scryfall Oracle Cards bulk data
+- Automatically downloads Oracle Cards dataset on first instantiation
+- Provides in-memory access to comprehensive card data
+- Uses Scryfall's Bulk Data API for efficient data fetching
+- Includes helper methods for searching cards by name, Oracle ID, or text query
+- Data is cached locally in `backend/data/cards/oracle-cards.json`
+- Dataset updates available every 12 hours from Scryfall
+
+Usage:
+```python
+from backend.app.services.card_database import CardDatabase
+
+# Initialize database (downloads if needed)
+db = await CardDatabase.create()
+
+# Search for cards
+lightning_bolt = db.get_card_by_name("Lightning Bolt")
+results = db.search_cards("bolt", limit=10)
+```
+
 ### `/frontend`
 React with TypeScript UI for inspecting data and recommendations.
 
