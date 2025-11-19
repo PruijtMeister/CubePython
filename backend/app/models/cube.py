@@ -5,7 +5,7 @@ These models are used for API responses and data validation,
 primarily for CubeCobra cube data.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class CubeSummaryModel(BaseModel):
@@ -64,9 +64,14 @@ class CubeModel(BaseModel):
     is_private: bool = Field(False, alias="isPrivate", description="Whether cube is private")
     date_updated: str | None = Field(None, alias="dateUpdated", description="Last update timestamp")
 
-    model_config = {
-        "populate_by_name": True,
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        extra='ignore',             # or 'forbid' if you must, but 'ignore' can be slightly cheaper than complex logic
+        validate_assignment=False,  # only needed if you assign after creation
+        frozen=False,
+        arbitrary_types_allowed=False,  # if you don’t need arbitrary types
+        revalidate_instances='never',   # if you pass already-valid instances around
+        populate_by_name=True,
+        json_schema_extra = {
             "example": {
                 "id": "1fdv1",
                 "name": "My Awesome Cube",
@@ -82,4 +87,4 @@ class CubeModel(BaseModel):
                 "date_updated": "2024-01-15T12:00:00Z",
             }
         }
-    }
+    )

@@ -10,8 +10,10 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+from pydantic import TypeAdapter
 
 from app.core.config import settings
+from app.models.card import CardModel
 
 
 class CardDatabase:
@@ -30,7 +32,7 @@ class CardDatabase:
         data_dir: Path to the directory where card data is stored
         oracle_cards_path: Path to the oracle-cards.json file
         version_path: Path to the version.txt file tracking the data version
-        cards: List of card dictionaries loaded from the Oracle Cards file
+        cards: List of CardModel instances loaded from the Oracle Cards file
 
     Example:
         ```python
@@ -39,7 +41,7 @@ class CardDatabase:
 
         # Access the cards
         for card in db.cards:
-            print(card['name'])
+            print(card.name)
         ```
     """
 
@@ -68,7 +70,7 @@ class CardDatabase:
 
         self.oracle_cards_path = self.data_dir / self.ORACLE_CARDS_FILENAME
         self.version_path = self.data_dir / self.VERSION_FILENAME
-        self.cards: list[dict[str, Any]] = []
+        self.cards: list[CardModel] = []
 
     @classmethod
     async def create(cls, data_dir: Path | None = None) -> "CardDatabase":
@@ -259,10 +261,14 @@ class CardDatabase:
         """
         print(f"Loading cards from {self.oracle_cards_path}...")
         with self.oracle_cards_path.open("r", encoding="utf-8") as f:
-            self.cards = json.load(f)
+            card_data = json.load(f)
+
+        print(f"Validating {len(card_data)} cards with CardModel...")
+        adapter = TypeAdapter(list[CardModel])
+        self.cards = adapter.validate_python(card_data)
         print(f"Loaded {len(self.cards)} cards")
 
-    def get_card_by_name(self, name: str) -> dict[str, Any] | None:
+    def get_card_by_name(self, name: str) -> CardModel | None:
         """
         Get a card by its exact name.
 
@@ -270,14 +276,14 @@ class CardDatabase:
             name: The exact card name to search for.
 
         Returns:
-            Card dictionary if found, None otherwise.
+            CardModel instance if found, None otherwise.
         """
         for card in self.cards:
-            if card.get("name") == name:
+            if card.name == name:
                 return card
         return None
 
-    def get_cards_by_oracle_id(self, oracle_id: str) -> list[dict[str, Any]]:
+    def get_cards_by_oracle_id(self, oracle_id: str) -> list[CardModel]:
         """
         Get all printings of a card by Oracle ID.
 
@@ -285,11 +291,11 @@ class CardDatabase:
             oracle_id: The Oracle ID to search for.
 
         Returns:
-            List of card dictionaries with the matching Oracle ID.
+            List of CardModel instances with the matching Oracle ID.
         """
-        return [card for card in self.cards if card.get("oracle_id") == oracle_id]
+        return [card for card in self.cards if card.oracle_id == oracle_id]
 
-    def search_cards(self, query: str, limit: int = 10) -> list[dict[str, Any]]:
+    def search_cards(self, query: str, limit: int = 10) -> list[CardModel]:
         """
         Simple card name search.
 
@@ -298,13 +304,13 @@ class CardDatabase:
             limit: Maximum number of results to return.
 
         Returns:
-            List of matching card dictionaries.
+            List of matching CardModel instances.
         """
         query_lower = query.lower()
         results = []
 
         for card in self.cards:
-            if query_lower in card.get("name", "").lower():
+            if query_lower in card.name.lower():
                 results.append(card)
                 if len(results) >= limit:
                     break

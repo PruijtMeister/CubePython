@@ -5,7 +5,7 @@ These models are used for API responses and data validation,
 primarily for Scryfall API data.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class CardModel(BaseModel):
@@ -60,8 +60,14 @@ class CardModel(BaseModel):
         default_factory=dict, description="Card prices in various currencies"
     )
 
-    model_config = {
-        "json_schema_extra": {
+
+    model_config = ConfigDict(
+        extra='ignore',             # or 'forbid' if you must, but 'ignore' can be slightly cheaper than complex logic
+        validate_assignment=False,  # only needed if you assign after creation
+        frozen=False,
+        arbitrary_types_allowed=False,  # if you don’t need arbitrary types
+        revalidate_instances='never',   # if you pass already-valid instances around
+        json_schema_extra = {
             "example": {
                 "id": "f2b9983e-20d4-4d12-9e2c-ec6d9a345787",
                 "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
@@ -81,4 +87,4 @@ class CardModel(BaseModel):
                 "prices": {"usd": "0.25", "eur": "0.20"},
             }
         }
-    }
+    )
