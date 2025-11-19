@@ -28,8 +28,8 @@ async def get_card_by_id(card_id: str, request: Request) -> CardModel:
 
     # Search for the card by ID
     for card in card_db.cards:
-        if card.get("id") == card_id:
-            return CardModel.model_validate(card)
+        if card.id == card_id:
+            return card
 
     raise HTTPException(
         status_code=404,
@@ -60,7 +60,7 @@ async def get_card_by_name(card_name: str, request: Request) -> CardModel:
             detail=f"Card with name '{card_name}' not found"
         )
 
-    return CardModel.model_validate(card)
+    return card
 
 
 @router.get("/search/{query}")
@@ -82,4 +82,4 @@ async def search_cards(
     card_db = request.app.state.card_db
     results = card_db.search_cards(query, limit=limit)
 
-    return [CardModel.model_validate(card) for card in results]
+    return results

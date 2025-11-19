@@ -12,6 +12,7 @@ from typing import Any
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
+from pydantic import TypeAdapter
 
 from app.models.cube import CubeModel
 
@@ -102,7 +103,13 @@ class CubeDatabase:
 
         print("Loading full unfiltered data...")
         cube_data = self._load_full_data()
-        return [CubeModel.model_validate(row) for row in cube_data[:100]]
+
+        adapter = TypeAdapter(list[CubeModel])
+        return adapter.validate_python(cube_data)
+        return adapter.model_construct(cube_data)
+
+        return [CubeModel.model_construct(row) for row in cube_data]
+        # return [CubeModel.model_validate(row) for row in cube_data[:100]]
 
     def _load_full_data(self) -> list[dict[str, Any]]:
         """Load the full unfiltered cube data from local file."""
