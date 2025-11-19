@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core import settings, init_db
+from app.core import settings
 from app.api.health import router as health_router
 from app.api.cards import router as cards_router
 from app.api.cubes import router as cubes_router
@@ -15,8 +15,6 @@ from app.services.cube_database import CubeDatabase
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
-    # Startup
-    await init_db()
 
     # Initialize CardDatabase
     print("Initializing CardDatabase...")

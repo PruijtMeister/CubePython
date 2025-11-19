@@ -1,0 +1,217 @@
+.cube-detail-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 12px 0;
+  font-size: 14px;
+}
+
+.breadcrumb-link {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumb-link:hover {
+  color: #357abd;
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  color: #999;
+  user-select: none;
+}
+
+.breadcrumb-current {
+  color: #333;
+  font-weight: 500;
+}
+
+/* Content */
+.cube-detail-content {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cube-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.cube-detail-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 32px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.cube-id-badge {
+  background: #4a90e2;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Grid Layout */
+.cube-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.cube-detail-section {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.cube-detail-section.full-width {
+  grid-column: 1 / -1;
+}
+
+.cube-detail-section h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 20px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 8px;
+}
+
+/* Info Rows */
+.cube-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #555;
+  min-width: 120px;
+}
+
+.info-value {
+  color: #333;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Description */
+.cube-description {
+  margin: 0;
+  color: #555;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Tags */
+.cube-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cube-tag {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cube-tag.category-prefix {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+/* Cards Section */
+.cube-cards-info {
+  color: #666;
+}
+
+.cube-cards-info p {
+  margin: 0;
+}
+
+.no-cards {
+  color: #999;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Loading & Error States */
+.cube-detail-loading,
+.cube-detail-error {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+}
+
+.cube-detail-loading {
+  color: #666;
+}
+
+.cube-detail-error {
+  color: #d32f2f;
+  background: #ffebee;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cube-detail-content {
+    padding: 20px;
+  }
+
+  .cube-detail-header h2 {
+    font-size: 24px;
+  }
+
+  .cube-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .info-value {
+    text-align: left;
+  }
+}
