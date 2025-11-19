@@ -158,6 +158,65 @@ recommender.save("models/my_recommender.pkl")
 loaded_recommender = MyRecommender.load("models/my_recommender.pkl")
 ```
 
+**Recommender Utils** (`/backend/app/services/recommender/utils.py`)
+- Utility functions for building and manipulating recommender data structures
+- Provides helper functions for collaborative filtering algorithms
+
+Key functions:
+
+`generate_sparse_cf_matrix(cubes: List[CubeModel], binary: bool = True)` - Creates a sparse cube-card matrix for collaborative filtering
+- Returns tuple of (csr_matrix, card_to_col_mapping, cube_to_row_mapping)
+- `binary=True`: Each card presence is represented as 1 (default)
+- `binary=False`: Each card is represented by its count in the cube
+- Matrix shape: (n_cubes, n_unique_cards)
+- Efficient sparse representation using scipy.sparse.csr_matrix
+
+`calculate_card_cooccurrence(cube_card_matrix: csr_matrix)` - Calculate card co-occurrence matrix
+- Computes how often pairs of cards appear together across cubes
+- Returns symmetric matrix where cell (i,j) = number of cubes containing both cards
+- Matrix shape: (n_cards, n_cards)
+- Uses matrix multiplication (M^T @ M) for efficient computation
+
+`calculate_card_similarities(cooccurrence_matrix: csr_matrix, metric: str = "cosine")` - Calculate card-card similarities
+- Converts co-occurrence counts into normalized similarity scores (0 to 1)
+- Supported metrics:
+  - `"cosine"`: Cosine similarity (normalized by geometric mean)
+  - `"jaccard"`: Jaccard similarity coefficient (intersection over union)
+- Returns similarity matrix of shape (n_cards, n_cards)
+
+Usage:
+```python
+from app.services.recommender.utils import (
+    generate_sparse_cf_matrix,
+    calculate_card_cooccurrence,
+    calculate_card_similarities
+)
+from app.models.cube import CubeModel
+
+# Generate binary matrix (1 for card presence)
+matrix, card_to_col, cube_to_row = generate_sparse_cf_matrix(cubes, binary=True)
+
+# Generate count matrix (actual card counts)
+matrix, card_to_col, cube_to_row = generate_sparse_cf_matrix(cubes, binary=False)
+
+# Calculate card co-occurrence
+cooccurrence = calculate_card_cooccurrence(matrix)
+
+# Calculate similarities
+cosine_sim = calculate_card_similarities(cooccurrence, metric="cosine")
+jaccard_sim = calculate_card_similarities(cooccurrence, metric="jaccard")
+
+# Find similar cards to a target card
+target_card_col = card_to_col[target_card_id]
+similarities = cosine_sim[target_card_col].toarray().flatten()
+top_similar_indices = np.argsort(similarities)[-10:][::-1]
+
+# Get co-occurrence between two cards
+card_i_col = card_to_col[card_i_id]
+card_j_col = card_to_col[card_j_id]
+cooccur_count = cooccurrence[card_i_col, card_j_col]
+```
+
 **CubeBasedCollaborativeFilteringRecommender** (`/backend/app/services/recommender/collaborative_filtering.py`)
 - Cube-cube collaborative filtering implementation (default algorithm)
 - Finds cubes similar to target cube based on shared cards
